@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>نقشه شاخص‌های سازمانی با داده‌های زنده از گوگل‌شیت</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Tahoma, Arial, sans-serif; background: #f5f4f0; color: #2c2c2a; direction: rtl; }
+
+.header {
+  background: #fff;
+  border-bottom: 0.5px solid #d3d1c7;
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.header h1 { font-size: 15px; font-weight: 500; color: #2c2c2a; }
+.header p { font-size: 12px; color: #888780; margin-top: 2px; }
+
+.teams-bar {
+  background: #fff;
+  border-bottom: 0.5px solid #d3d1c7;
+  padding: 10px 24px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.teams-bar span { font-size: 12px; color: #888780; margin-left: 4px; }
+.team-btn {
+  font-size: 12px;
+  padding: 4px 12px;
+  border-radius: 99px;
+  border: 0.5px solid #d3d1c7;
+  background: #f5f4f0;
+  color: #5f5e5a;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: Tahoma, Arial, sans-serif;
+}
+.team-btn:hover { background: #e9e8e0; }
+.team-btn.active { background: #3c3489; color: #fff; border-color: #3c3489; }
+.team-btn.all-btn.active { background: #2c2c2a; border-color: #2c2c2a; }
+
+.main { display: flex; height: calc(100vh - 105px); overflow: hidden; }
+
+.list-panel {
+  width: 260px;
+  min-width: 220px;
+  background: #fff;
+  border-left: 0.5px solid #d3d1c7;
+  overflow-y: auto;
+  padding: 12px 0;
+}
+.list-panel .section-title {
+  font-size: 11px;
+  color: #b4b2a9;
+  padding: 8px 16px 4px;
+  letter-spacing: 0.5px;
+}
+.kpi-item {
+  padding: 8px 16px;
+  font-size: 13px;
+  cursor: pointer;
+  border-right: 3px solid transparent;
+  transition: all 0.12s;
+  color: #3d3d3a;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.kpi-item:hover { background: #f5f4f0; }
+.kpi-item.active { background: #eeedfe; border-right-color: #534ab7; color: #3c3489; font-weight: 500; }
+.kpi-item.dimmed { opacity: 0.35; }
+.kpi-item .team-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  flex-shrink: 0;
+}
+.kpi-item .dep-count {
+  font-size: 10px;
+  color: #b4b2a9;
+  flex-shrink: 0;
+}
+.kpi-item .kpi-value {
+  font-size: 12px;
+  font-weight: 500;
+  background: #f0f0ea;
+  padding: 2px 8px;
+  border-radius: 20px;
+  color: #3c3489;
+  min-width: 55px;
+  text-align: center;
+}
+
+.canvas-area {
+  flex: 1;
+  overflow: auto;
+  padding: 32px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.empty-state {
+  text-align: center;
+  margin-top: 80px;
+  color: #b4b2a9;
+}
+.empty-state .icon { font-size: 40px; margin-bottom: 12px; }
+.empty-state p { font-size: 14px; }
+
+.tree-container { min-width: 600px; }
+
+.node-box {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 0.5px solid #d3d1c7;
+  background: #fff;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+  position: relative;
+  font-family: Tahoma, Arial, sans-serif;
+  color: #2c2c2a;
+}
+.node-box:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); border-color: #888780; }
+.node-box.root-node {
+  background: #3c3489;
+  color: #fff;
+  border-color: #3c3489;
+  font-weight: 500;
+  font-size: 14px;
+  padding: 10px 18px;
+}
+.node-box.child-node { background: #eeedfe; border-color: #afa9ec; color: #3c3489; }
+.node-box.child-node:hover { background: #cecbf6; }
+.node-box.grand-node { background: #f5f4f0; border-color: #d3d1c7; color: #3d3d3a; }
+.node-box .team-tag {
+  font-size: 10px;
+  opacity: 0.7;
+  background: rgba(255,255,255,0.2);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+.node-box.child-node .team-tag { background: rgba(83,74,183,0.12); color: #534ab7; opacity: 1; }
+.node-box.grand-node .team-tag { background: #e9e8e0; color: #888780; }
+.node-box .kpi-number {
+  font-weight: 600;
+  background: rgba(0,0,0,0.08);
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 12px;
+  margin-right: 4px;
+}
+.root-node .kpi-number { background: rgba(255,255,255,0.2); }
+
+.tree-level { display: flex; flex-direction: column; gap: 0; }
+.tree-row { display: flex; align-items: stretch; gap: 0; margin-bottom: 0; }
+
+.connector-v {
+  width: 24px;
+  position: relative;
+  flex-shrink: 0;
+}
+.connector-v::before {
+  content: '';
+  position: absolute;
+  right: 50%;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: #d3d1c7;
+}
+.connector-v.last::before { bottom: 50%; }
+.connector-v.first::before { top: 50%; }
+.connector-v.only::before { display: none; }
+
+.connector-h {
+  height: 1px;
+  background: #d3d1c7;
+  width: 16px;
+  align-self: center;
+  flex-shrink: 0;
+}
+
+.children-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-right: 0;
+}
+.child-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+}
+.child-subtree {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+}
+.grand-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-right: 0;
+  margin-right: 0;
+}
+.grand-row { display: flex; align-items: center; gap: 0; }
+
+.v-line-wrap {
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+  padding-top: 22px;
+  padding-bottom: 4px;
+  margin-left: 8px;
+}
+.v-line {
+  width: 1px;
+  background: #d3d1c7;
+  flex: 1;
+  min-height: 8px;
+}
+.h-line { width: 20px; height: 1px; background: #d3d1c7; align-self: center; flex-shrink: 0; }
+.h-line-short { width: 12px; height: 1px; background: #d3d1c7; align-self: center; flex-shrink: 0; }
+
+.expand-btn {
+  font-size: 10px;
+  background: rgba(255,255,255,0.3);
+  border: 0.5px solid rgba(255,255,255,0.5);
+  border-radius: 4px;
+  padding: 1px 5px;
+  cursor: pointer;
+  color: inherit;
+  font-family: Tahoma, Arial, sans-serif;
+  line-height: 1.4;
+}
+.expand-btn:hover { background: rgba(255,255,255,0.5); }
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 20px;
+  font-size: 12px;
+  color: #888780;
+}
+.breadcrumb .bc-sep { color: #d3d1c7; }
+
+.info-bar {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+.info-card {
+  background: #fff;
+  border: 0.5px solid #d3d1c7;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 12px;
+  color: #888780;
+}
+.info-card strong { display: block; font-size: 20px; font-weight: 500; color: #2c2c2a; }
+
+.loading-msg {
+  background: #fff3e0;
+  border-right: 4px solid #ff9800;
+  padding: 12px 20px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 13px;
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>📊 نقشه شاخص‌های سازمانی با داده زنده از گوگل‌شیت</h1>
+    <p>روی هر شاخص کلیک کنید – مقدار هفته‌ی انتخاب شده در کنار آن نمایش داده می‌شود</p>
+  </div>
+  <div>
+    <label>🗓️ هفته:</label>
+    <select id="weekFilter"></select>
+  </div>
+</div>
+
+<div class="teams-bar">
+  <span>🏢 تیم:</span>
+  <button class="team-btn all-btn active" onclick="filterTeam('all')">همه</button>
+</div>
+
+<div class="main">
+  <div class="canvas-area" id="canvas">
+    <div class="empty-state">
+      <div class="icon">🔄</div>
+      <p>در حال بارگیری داده‌ها از گوگل‌شیت ...</p>
+    </div>
+  </div>
+  <div class="list-panel" id="listPanel"></div>
+</div>
+
+<script>
+// =======================  داده‌های ساختار درخت (همان شاخص‌های قبلی)  =======================
+const raw = [
+  { name: "Share of Voice (SOV)", team: "ارتباطات", deps: [] },
+  { name: "OTD (On-Time Delivery)", team: "پردازش و لجستیک", deps: [] },
+  { name: "MDD", team: "پردازش و لجستیک", deps: [] },
+  { name: "Cost per Order", team: "پردازش و لجستیک", deps: ["Cost per Delivery","Packaging Cost","FC Cost per Order","OPS Overhead Cost","CRM Cost"] },
+  { name: "CRM Cost", team: "پردازش و لجستیک", deps: ["Lack Rate","OTD (On-Time Delivery)"] },
+  { name: "FC Cost per Order", team: "پردازش و لجستیک", deps: ["Item per Staff per hour"] },
+  { name: "Cost per Delivery", team: "پردازش و لجستیک", deps: [] },
+  { name: "Packaging Cost", team: "پردازش و لجستیک", deps: [] },
+  { name: "Lack Rate(Item)", team: "پردازش و لجستیک", deps: [] },
+  { name: "Item per Staff per hour", team: "پردازش و لجستیک", deps: [] },
+  { name: "Total Cart Abandonment Rate", team: "پروداکت", deps: [] },
+  { name: "OPS Overhead Cost", team: "پشتیبانی", deps: [] },
+  { name: "Page Load Time", team: "تک", deps: [] },
+  { name: "Uptime", team: "تک", deps: [] },
+  { name: "NMV", team: "رشد", deps: ["Session","Conversion Rate","AOV"] },
+  { name: "Net Profit", team: "رشد", deps: ["NMV","Cost per Order"] },
+  { name: "Total Discount", team: "رشد", deps: [] },
+  { name: "Orders", team: "رشد", deps: ["Session","AOV"] },
+  { name: "AOV", team: "رشد", deps: ["IPO","Total Discount"] },
+  { name: "Session", team: "رشد", deps: ["Snapp Pay Traffic Share","Organic Traffic","ECRM Traffic","Social Traffic"] },
+  { name: "Conversion Rate", team: "رشد", deps: ["Page Load Time","Total Discount","MDD","Total Cart Abandonment Rate","Uptime","Competitor Price Gap","ATP"] },
+  { name: "Total CAC", team: "رشد", deps: [] },
+  { name: "Keyword Ranking", team: "رشد", deps: [] },
+  { name: "Organic Impression", team: "رشد", deps: [] },
+  { name: "Non-branded Traffic", team: "رشد", deps: ["Total CAC","Organic Impression","Keyword Ranking"] },
+  { name: "branded Traffic", team: "رشد", deps: ["Share of Voice (SOV)","Brand Search Volume"] },
+  { name: "Organic Traffic", team: "رشد", deps: ["Non-branded Traffic","branded Traffic"] },
+  { name: "Direct Traffic Share", team: "رشد", deps: [] },
+  { name: "Organic Revenue", team: "رشد", deps: [] },
+  { name: "Snapp Pay Revenue", team: "رشد", deps: [] },
+  { name: "Snapp Pay Traffic Share", team: "رشد", deps: [] },
+  { name: "Brand Search Volume", team: "رشد", deps: [] },
+  { name: "DOI Last Inventory(Days of Inventory) - Retail", team: "ساپلای کنترل", deps: [] },
+  { name: "ATP", team: "کامرشیال", deps: [] },
+  { name: "Cash Balance", team: "مالی", deps: [] },
+  { name: "Cash Runway", team: "مالی", deps: [] },
+  { name: "Payable Pressure", team: "مالی", deps: [] },
+  { name: "Lack Rate", team: "پردازش و لجستیک", deps: [] },
+  { name: "IPO", team: "رشد", deps: [] },
+  { name: "ECRM Traffic", team: "رشد", deps: [] },
+  { name: "Social Traffic", team: "رشد", deps: [] },
+  { name: "Competitor Price Gap", team: "کامرشیال", deps: [] },
+];
+
+const kpiMap = {};
+raw.forEach(k => { kpiMap[k.name] = k; });
+
+const teams = [...new Set(raw.map(k => k.team))].sort();
+const teamColors = {};
+const palette = ['#7f77dd','#1d9e75','#d85a30','#378add','#d4537e','#639922','#ba7517','#534ab7'];
+teams.forEach((t,i) => { teamColors[t] = palette[i % palette.length]; });
+
+// =======================  متغیرهای داده از گوگل‌شیت =======================
+let sheetDataMap = {};       // { week: { kpiName: value } }
+let availableWeeks = [];     // ["W5","W6",...]
+let currentWeek = "";
+let activeTeam = 'all';
+let selectedKPI = null;
+
+// =======================  تابع خواندن از گوگل‌شیت (فرمت gviz/tq) =======================
+async function loadGoogleSheetData() {
+  const sheetId = "1j5qHAki1YfxIffQ9cO91Dc0w3b3bETSgpZbVfjfYjhY";
+  const sheetName = "Long Format";
+  const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
+  
+  try {
+    const response = await fetch(url);
+    const text = await response.text();
+    // حذف مقدمه و انتهای JSONP (google.visualization.Query.setResponse(...))
+    const jsonStart = text.indexOf('{');
+    const jsonEnd = text.lastIndexOf('}');
+    const jsonStr = text.substring(jsonStart, jsonEnd + 1);
+    const data = JSON.parse(jsonStr);
+    
+    const rows = data.table.rows;
+    const cols = data.table.cols;
+    if (!rows || rows.length === 0) throw new Error("داده‌ای در شیت پیدا نشد");
+    
+    // ستون‌ها: معمولاً ستون0 = Table1 (نام شاخص), ستون1 = Week, ستون2 = Data
+    let colIndexKPI = 0, colIndexWeek = 1, colIndexValue = 2;
+    // اگر سرستون داشتیم می‌توان تشخیص داد، ولی خیالمان راحت است که ترتیب همین است.
+    
+    sheetDataMap = {};
+    availableWeeks = [];
+    const weekSet = new Set();
+    
+    for (let row of rows) {
+      const kpiCell = row.c[colIndexKPI];
+      const weekCell = row.c[colIndexWeek];
+      const valCell = row.c[colIndexValue];
+      
+      let kpiName = kpiCell ? (kpiCell.v || "").toString().trim() : "";
+      let week = weekCell ? (weekCell.v || "").toString().trim() : "";
+      let value = (valCell && valCell.v !== undefined && valCell.v !== null) ? valCell.v : null;
+      
+      if (!kpiName || !week || value === null || value === "") continue;
+      // حذف ردیف‌های خراب مانند #VALUE!
+      if (kpiName === "#VALUE!" || isNaN(parseFloat(value))) continue;
+      
+      if (!sheetDataMap[week]) sheetDataMap[week] = {};
+      sheetDataMap[week][kpiName] = value;
+      weekSet.add(week);
+    }
+    
+    availableWeeks = Array.from(weekSet).sort((a,b) => {
+      const numA = parseInt(a.replace('W','')) || 0;
+      const numB = parseInt(b.replace('W','')) || 0;
+      return numA - numB;
+    });
+    
+    if (availableWeeks.length === 0) throw new Error("هفته معتبری یافت نشد");
+    
+    // تنظیم هفته پیش‌فرض به آخرین هفته (جدیدترین)
+    currentWeek = availableWeeks[availableWeeks.length - 1];
+    
+    // پر کردن dropdown هفته
+    const weekSelect = document.getElementById('weekFilter');
+    weekSelect.innerHTML = "";
+    availableWeeks.forEach(w => {
+      const option = document.createElement('option');
+      option.value = w;
+      option.textContent = w;
+      if (w === currentWeek) option.selected = true;
+      weekSelect.appendChild(option);
+    });
+    
+    // رویداد تغییر هفته
+    weekSelect.onchange = (e) => {
+      currentWeek = e.target.value;
+      updateAllUI();
+    };
+    
+    // بارگذاری موفق - بروزرسانی کل صفحه
+    updateAllUI();
+    
+  } catch (err) {
+    console.error("خطا در خواندن گوگل‌شیت:", err);
+    document.getElementById('canvas').innerHTML = `<div class="empty-state"><div class="icon">⚠️</div><p>خطا در اتصال به گوگل‌شیت. اطمینان حاصل کنید شیت عمومی است.<br><small>${err.message}</small></p></div>`;
+  }
+}
+
+// =======================  توابع کمکی =======================
+function getAllDeps(name, visited = new Set()) {
+  if (visited.has(name)) return visited;
+  const kpi = kpiMap[name];
+  if (!kpi) return visited;
+  kpi.deps.forEach(d => {
+    if (!visited.has(d)) {
+      visited.add(d);
+      getAllDeps(d, visited);
+    }
+  });
+  return visited;
+}
+
+function getKPIValue(kpiName, week) {
+  if (!sheetDataMap[week]) return null;
+  const val = sheetDataMap[week][kpiName];
+  if (val === undefined || val === null) return null;
+  // اگر عدد است، با دو رقم اعشار نمایش بده (در صورت نیاز)
+  if (typeof val === 'number') {
+    return val % 1 === 0 ? val.toString() : val.toFixed(2);
+  }
+  return val.toString();
+}
+
+// =======================  رندر لیست سمت راست با مقادیر هفته جاری =======================
+function buildList() {
+  const panel = document.getElementById('listPanel');
+  panel.innerHTML = '';
+  
+  const byTeam = {};
+  raw.forEach(k => {
+    if (activeTeam !== 'all' && k.team !== activeTeam) return;
+    if (!byTeam[k.team]) byTeam[k.team] = [];
+    byTeam[k.team].push(k);
+  });
+
+  Object.keys(byTeam).sort().forEach(team => {
+    const title = document.createElement('div');
+    title.className = 'section-title';
+    title.textContent = team;
+    panel.appendChild(title);
+
+    byTeam[team].forEach(k => {
+      const item = document.createElement('div');
+      item.className = 'kpi-item' + (selectedKPI === k.name ? ' active' : '');
+      
+      const nameSpan = document.createElement('span');
+      nameSpan.textContent = k.name;
+      nameSpan.style.flex = '1';
+      
+      const valSpan = document.createElement('span');
+      valSpan.className = 'kpi-value';
+      const val = getKPIValue(k.name, currentWeek);
+      valSpan.textContent = (val !== null && val !== undefined) ? val : "—";
+      
+      const dot = document.createElement('span');
+      dot.className = 'team-dot';
+      dot.style.background = teamColors[k.team];
+      
+      const cnt = document.createElement('span');
+      cnt.className = 'dep-count';
+      const totalDeps = getAllDeps(k.name).size;
+      if (totalDeps > 0) cnt.textContent = totalDeps + ' ↓';
+      
+      item.appendChild(nameSpan);
+      if (totalDeps > 0) item.appendChild(cnt);
+      item.appendChild(valSpan);
+      item.appendChild(dot);
+      
+      item.onclick = () => selectKPI(k.name);
+      panel.appendChild(item);
+    });
+  });
+}
+
+function selectKPI(name) {
+  selectedKPI = name;
+  buildList();        // بازسازی لیست برای هایلایت
+  renderTree(name);
+}
+
+function filterTeam(t) {
+  activeTeam = t;
+  document.querySelectorAll('.team-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.team-btn').forEach(b => {
+    if (t === 'all' && b.classList.contains('all-btn')) b.classList.add('active');
+    if (t !== 'all' && b.textContent === t) b.classList.add('active');
+  });
+  buildList();
+  if (selectedKPI) {
+    const kpi = kpiMap[selectedKPI];
+    if (kpi && (activeTeam === 'all' || kpi.team === activeTeam)) {
+      renderTree(selectedKPI);
+    } else {
+      selectedKPI = null;
+      document.getElementById('canvas').innerHTML = `<div class="empty-state"><div class="icon">🌿</div><p>یک شاخص از لیست سمت راست انتخاب کنید</p></div>`;
+    }
+  }
+}
+
+function updateAllUI() {
+  buildList();
+  if (selectedKPI && kpiMap[selectedKPI]) {
+    renderTree(selectedKPI);
+  } else if (selectedKPI === null) {
+    // اگر هیچ شاخصی انتخاب نشده بود، Net Profit را پیش‌فرض انتخاب کن (در صورت وجود)
+    if (kpiMap["Net Profit"]) {
+      selectKPI("Net Profit");
+    } else if (raw.length) {
+      selectKPI(raw[0].name);
+    } else {
+      document.getElementById('canvas').innerHTML = `<div class="empty-state"><div class="icon">📊</div><p>هیچ شاخصی در درخت وجود ندارد</p></div>`;
+    }
+  } else {
+    renderTree(selectedKPI);
+  }
+}
+
+// =======================  رندر درخت با نمایش مقدار =======================
+function renderTree(rootName) {
+  const canvas = document.getElementById('canvas');
+  const root = kpiMap[rootName];
+  if (!root) {
+    canvas.innerHTML = `<div class="empty-state"><div class="icon">❓</div><p>شاخص "${rootName}" در درخت تعریف نشده است</p></div>`;
+    return;
+  }
+  
+  const totalDeps = getAllDeps(rootName).size;
+  const rootValue = getKPIValue(rootName, currentWeek);
+  
+  let html = `<div class="tree-container">`;
+  html += `<div class="info-bar">
+    <div class="info-card"><strong>${root.deps.length}</strong>شاخص اثرگذار مستقیم</div>
+    <div class="info-card"><strong>${totalDeps}</strong>کل شاخص‌های زنجیره</div>
+    <div class="info-card" style="border-right: 3px solid ${teamColors[root.team]}"><strong style="color:${teamColors[root.team]}">${root.team}</strong>تیم مالک</div>
+    <div class="info-card"><strong>${rootValue !== null ? rootValue : "—"}</strong>مقدار در هفته ${currentWeek}</div>
+  </div>`;
+  
+  html += renderNode(rootName, 0, new Set([rootName]));
+  html += `</div>`;
+  canvas.innerHTML = html;
+}
+
+function renderNode(name, depth, visited) {
+  const kpi = getKPIInfo(name);
+  const color = teamColors[kpi.team] || '#888780';
+  const isRoot = depth === 0;
+  const isChild = depth === 1;
+  
+  let nodeClass = 'node-box';
+  if (isRoot) nodeClass += ' root-node';
+  else if (isChild) nodeClass += ' child-node';
+  else nodeClass += ' grand-node';
+  
+  const value = getKPIValue(name, currentWeek);
+  const valueHtml = (value !== null && value !== undefined) ? `<span class="kpi-number">${value}</span>` : '';
+  
+  let html = `<div style="display:inline-flex;flex-direction:column;align-items:flex-start;gap:8px;">`;
+  
+  html += `<div class="${nodeClass}" onclick="selectKPI('${escName(name)}')" title="تیم: ${kpi.team}">`;
+  html += `<span>${name}</span>`;
+  if (!isRoot) {
+    html += `<span class="team-tag" style="${isChild ? '' : `color:${color};background:${color}18;`}">${kpi.team}</span>`;
+  }
+  html += valueHtml;
+  html += `</div>`;
+
+  if (kpi.deps.length > 0 && depth < 2) {
+    const newVisited = new Set([...visited, name]);
+    html += `<div style="display:flex;align-items:flex-start;gap:0;padding-right:${isRoot ? 20 : 16}px;">`;
+    html += `<div style="width:1px;background:#d3d1c7;align-self:stretch;margin-left:16px;margin-top:0;flex-shrink:0;"></div>`;
+    html += `<div style="display:flex;flex-direction:column;gap:8px;">`;
+    kpi.deps.forEach((dep) => {
+      const isCircular = visited.has(dep);
+      html += `<div style="display:flex;align-items:center;gap:0;">`;
+      html += `<div style="width:20px;height:1px;background:#d3d1c7;flex-shrink:0;"></div>`;
+      if (isCircular) {
+        const cDep = getKPIInfo(dep);
+        const depValue = getKPIValue(dep, currentWeek);
+        const depValueHtml = (depValue !== null && depValue !== undefined) ? `<span class="kpi-number" style="background:#e0e0d5;">${depValue}</span>` : '';
+        html += `<div class="node-box grand-node" style="opacity:0.6;cursor:default;" title="تکراری - از قبل نمایش داده شده">`;
+        html += `<span>${dep}</span>`;
+        html += `<span class="team-tag" style="color:${teamColors[cDep.team]||'#888'};background:${teamColors[cDep.team]||'#888'}18;">${cDep.team}</span>`;
+        html += depValueHtml;
+        html += `<span style="font-size:10px;opacity:0.5;">↩</span>`;
+        html += `</div>`;
+      } else {
+        html += renderNode(dep, depth + 1, newVisited);
+      }
+      html += `</div>`;
+    });
+    html += `</div>`;
+    html += `</div>`;
+  } else if (kpi.deps.length > 0 && depth >= 2) {
+    html += `<div style="display:flex;align-items:center;gap:8px;padding-right:16px;">`;
+    html += `<div style="width:20px;height:1px;background:#d3d1c7;flex-shrink:0;"></div>`;
+    html += `<div class="node-box grand-node" style="cursor:pointer;opacity:0.7;" onclick="selectKPI('${escName(name)}')">`;
+    html += `<span style="font-size:11px;color:#888780;">+${kpi.deps.length} شاخص دیگر ←</span>`;
+    html += `</div>`;
+    html += `</div>`;
+  }
+  html += `</div>`;
+  return html;
+}
+
+function getKPIInfo(name) {
+  return kpiMap[name] || { name, team: 'نامشخص', deps: [] };
+}
+
+function escName(name) {
+  return name.replace(/'/g, "\\'");
+}
+
+// =======================  شروع برنامه: بارگیری داده از گوگل‌شیت =======================
+// ابتدا تیم‌ها را بساز (دکمه‌ها)
+teams.forEach(t => {
+  const bar = document.querySelector('.teams-bar');
+  const btn = document.createElement('button');
+  btn.className = 'team-btn';
+  btn.textContent = t;
+  btn.style.borderColor = teamColors[t] + '44';
+  btn.onclick = () => filterTeam(t);
+  bar.appendChild(btn);
+});
+
+// بارگیری داده از گوگل‌شیت
+loadGoogleSheetData();
+</script>
+</body>
+</html>
