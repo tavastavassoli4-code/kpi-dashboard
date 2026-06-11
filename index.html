@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>نقشه شاخص‌های سازمانی با داده‌های زنده از گوگل‌شیت</title>
+<title>نقشه شاخص‌های سازمانی با واحد و فرمت اعداد</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: Tahoma, Arial, sans-serif; background: #f5f4f0; color: #2c2c2a; direction: rtl; }
@@ -73,10 +73,10 @@ body { font-family: Tahoma, Arial, sans-serif; background: #f5f4f0; color: #2c2c
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+  flex-wrap: wrap;
 }
 .kpi-item:hover { background: #f5f4f0; }
 .kpi-item.active { background: #eeedfe; border-right-color: #534ab7; color: #3c3489; font-weight: 500; }
-.kpi-item.dimmed { opacity: 0.35; }
 .kpi-item .team-dot {
   width: 6px; height: 6px; border-radius: 50%;
   flex-shrink: 0;
@@ -93,7 +93,7 @@ body { font-family: Tahoma, Arial, sans-serif; background: #f5f4f0; color: #2c2c
   padding: 2px 8px;
   border-radius: 20px;
   color: #3c3489;
-  min-width: 55px;
+  min-width: 80px;
   text-align: center;
 }
 
@@ -153,6 +153,13 @@ body { font-family: Tahoma, Arial, sans-serif; background: #f5f4f0; color: #2c2c
 }
 .node-box.child-node .team-tag { background: rgba(83,74,183,0.12); color: #534ab7; opacity: 1; }
 .node-box.grand-node .team-tag { background: #e9e8e0; color: #888780; }
+.node-box .unit-badge {
+  font-size: 10px;
+  background: #e0e0d5;
+  padding: 2px 6px;
+  border-radius: 12px;
+  color: #5f5e5a;
+}
 .node-box .kpi-number {
   font-weight: 600;
   background: rgba(0,0,0,0.08);
@@ -161,101 +168,8 @@ body { font-family: Tahoma, Arial, sans-serif; background: #f5f4f0; color: #2c2c
   font-size: 12px;
   margin-right: 4px;
 }
+.root-node .unit-badge { background: rgba(255,255,255,0.25); color: #fff; }
 .root-node .kpi-number { background: rgba(255,255,255,0.2); }
-
-.tree-level { display: flex; flex-direction: column; gap: 0; }
-.tree-row { display: flex; align-items: stretch; gap: 0; margin-bottom: 0; }
-
-.connector-v {
-  width: 24px;
-  position: relative;
-  flex-shrink: 0;
-}
-.connector-v::before {
-  content: '';
-  position: absolute;
-  right: 50%;
-  top: 0;
-  bottom: 0;
-  width: 1px;
-  background: #d3d1c7;
-}
-.connector-v.last::before { bottom: 50%; }
-.connector-v.first::before { top: 50%; }
-.connector-v.only::before { display: none; }
-
-.connector-h {
-  height: 1px;
-  background: #d3d1c7;
-  width: 16px;
-  align-self: center;
-  flex-shrink: 0;
-}
-
-.children-wrap {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding-right: 0;
-}
-.child-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 0;
-}
-.child-subtree {
-  display: flex;
-  align-items: flex-start;
-  gap: 0;
-}
-.grand-wrap {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding-right: 0;
-  margin-right: 0;
-}
-.grand-row { display: flex; align-items: center; gap: 0; }
-
-.v-line-wrap {
-  display: flex;
-  flex-direction: column;
-  align-self: stretch;
-  padding-top: 22px;
-  padding-bottom: 4px;
-  margin-left: 8px;
-}
-.v-line {
-  width: 1px;
-  background: #d3d1c7;
-  flex: 1;
-  min-height: 8px;
-}
-.h-line { width: 20px; height: 1px; background: #d3d1c7; align-self: center; flex-shrink: 0; }
-.h-line-short { width: 12px; height: 1px; background: #d3d1c7; align-self: center; flex-shrink: 0; }
-
-.expand-btn {
-  font-size: 10px;
-  background: rgba(255,255,255,0.3);
-  border: 0.5px solid rgba(255,255,255,0.5);
-  border-radius: 4px;
-  padding: 1px 5px;
-  cursor: pointer;
-  color: inherit;
-  font-family: Tahoma, Arial, sans-serif;
-  line-height: 1.4;
-}
-.expand-btn:hover { background: rgba(255,255,255,0.5); }
-
-.breadcrumb {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 20px;
-  font-size: 12px;
-  color: #888780;
-}
-.breadcrumb .bc-sep { color: #d3d1c7; }
 
 .info-bar {
   display: flex;
@@ -272,22 +186,13 @@ body { font-family: Tahoma, Arial, sans-serif; background: #f5f4f0; color: #2c2c
   color: #888780;
 }
 .info-card strong { display: block; font-size: 20px; font-weight: 500; color: #2c2c2a; }
-
-.loading-msg {
-  background: #fff3e0;
-  border-right: 4px solid #ff9800;
-  padding: 12px 20px;
-  border-radius: 8px;
-  margin-bottom: 16px;
-  font-size: 13px;
-}
 </style>
 </head>
 <body>
 
 <div class="header">
   <div>
-    <h1>📊 نقشه شاخص‌های سازمانی با داده زنده از گوگل‌شیت</h1>
+    <h1>📊 نقشه شاخص‌های سازمانی با واحد و فرمت اعداد</h1>
     <p>روی هر شاخص کلیک کنید – مقدار هفته‌ی انتخاب شده در کنار آن نمایش داده می‌شود</p>
   </div>
   <div>
@@ -312,7 +217,7 @@ body { font-family: Tahoma, Arial, sans-serif; background: #f5f4f0; color: #2c2c
 </div>
 
 <script>
-// =======================  داده‌های ساختار درخت (همان شاخص‌های قبلی)  =======================
+// =======================  داده‌های ساختار درخت =======================
 const raw = [
   { name: "Share of Voice (SOV)", team: "ارتباطات", deps: [] },
   { name: "OTD (On-Time Delivery)", team: "پردازش و لجستیک", deps: [] },
@@ -346,8 +251,7 @@ const raw = [
   { name: "Snapp Pay Revenue", team: "رشد", deps: [] },
   { name: "Snapp Pay Traffic Share", team: "رشد", deps: [] },
   { name: "Brand Search Volume", team: "رشد", deps: [] },
-  { name: "DOI Retail(Days of Inventory) - Last Inventory", team: "ساپلای کنترل", deps: ["NMV","Inventory Value(Retail Cogs)(BR)"] },
-  { name: "Inventory Value(Retail Cogs)(BR)", team: "ساپلای کنترل", deps: [] },
+  { name: "DOI Last Inventory(Days of Inventory) - Retail", team: "ساپلای کنترل", deps: [] },
   { name: "ATP", team: "کامرشیال", deps: [] },
   { name: "Cash Balance", team: "مالی", deps: [] },
   { name: "Cash Runway", team: "مالی", deps: [] },
@@ -367,14 +271,93 @@ const teamColors = {};
 const palette = ['#7f77dd','#1d9e75','#d85a30','#378add','#d4537e','#639922','#ba7517','#534ab7'];
 teams.forEach((t,i) => { teamColors[t] = palette[i % palette.length]; });
 
-// =======================  متغیرهای داده از گوگل‌شیت =======================
-let sheetDataMap = {};       // { week: { kpiName: value } }
-let availableWeeks = [];     // ["W5","W6",...]
+// =======================  تنظیمات فرمت اعداد برای هر شاخص =======================
+// اینجا می‌توانید برای هر شاخص مشخص کنید:
+// - format: "percent" (درصد), "currency" (ریال/میلیون), "number" (عدد معمولی)
+// - decimals: تعداد اعشار
+// - separator: جداکننده هزارگان (فقط برای currency و number)
+const numberFormats = {
+  // درصدی‌ها
+  "Conversion Rate": { format: "percent", decimals: 2 },
+  "FCR": { format: "percent", decimals: 1 },
+  "Total Cart Abandonment Rate": { format: "percent", decimals: 1 },
+  "Share of Voice (SOV)": { format: "percent", decimals: 0 },
+  "ATP": { format: "percent", decimals: 2 },
+  "Uptime": { format: "percent", decimals: 1 },
+  
+  // ریالی‌ها (پول)
+  "Net Profit": { format: "currency", decimals: 0, unit: "ریال" },
+  "NMV": { format: "currency", decimals: 0, unit: "ریال" },
+  "Cost per Order": { format: "currency", decimals: 0, unit: "ریال" },
+  "CRM Cost": { format: "currency", decimals: 0, unit: "ریال" },
+  "FC Cost per Order": { format: "currency", decimals: 0, unit: "ریال" },
+  "Total Discount": { format: "currency", decimals: 0, unit: "ریال" },
+  "OPS Overhead Cost": { format: "currency", decimals: 0, unit: "ریال" },
+  "AOV": { format: "currency", decimals: 0, unit: "ریال" },
+  
+  // اعداد بزرگ با کاما
+  "Session": { format: "number", decimals: 0, separator: true },
+  "Orders": { format: "number", decimals: 0, separator: true },
+  "Organic Impression": { format: "number", decimals: 0, separator: true },
+  "Brand Search Volume": { format: "number", decimals: 0, separator: true },
+  
+  // اعداد معمولی (پیش‌فرض)
+  "Page Load Time": { format: "number", decimals: 1 },
+  "IPO": { format: "number", decimals: 2 },
+  "MDD": { format: "number", decimals: 2 },
+  "Lack Rate": { format: "percent", decimals: 1 },
+  "Item per Staff per hour": { format: "number", decimals: 1 },
+  "FRT Call": { format: "number", decimals: 0 },
+  "FRT Chat": { format: "number", decimals: 1 }
+};
+
+// تابع فرمت کردن عدد بر اساس تنظیمات
+function formatNumber(value, kpiName, unitFromSheet = "") {
+  if (value === null || value === undefined || isNaN(value)) return "—";
+  
+  const settings = numberFormats[kpiName] || { format: "number", decimals: 0, separator: false };
+  let num = parseFloat(value);
+  
+  switch (settings.format) {
+    case "percent":
+      // اگر عدد بین 0 و 1 است، آن را درصد در نظر بگیر (مثل 0.945 -> 94.5%)
+      let percentValue = num;
+      if (num <= 1 && num >= 0) {
+        percentValue = num * 100;
+      }
+      return percentValue.toFixed(settings.decimals) + "%";
+      
+    case "currency":
+      let formattedNum = num.toFixed(settings.decimals);
+      if (settings.separator !== false) {
+        formattedNum = Number(num).toLocaleString('fa-IR');
+      }
+      return formattedNum + " " + (settings.unit || unitFromSheet || "");
+      
+    default: // number
+      let result = num.toFixed(settings.decimals);
+      if (settings.separator === true) {
+        result = Number(num).toLocaleString('fa-IR');
+        if (settings.decimals > 0) {
+          // اضافه کردن اعشار بعد از جداسازی
+          let decimalPart = Math.abs(num - Math.floor(num)).toFixed(settings.decimals).substring(1);
+          result = result + decimalPart;
+        }
+      }
+      if (unitFromSheet && unitFromSheet !== "") {
+        return result + " " + unitFromSheet;
+      }
+      return result;
+  }
+}
+
+// =======================  داده از گوگل‌شیت (با ستون Unit) =======================
+let sheetDataMap = {};       // { week: { kpiName: { value, unit } } }
+let availableWeeks = [];
 let currentWeek = "";
 let activeTeam = 'all';
 let selectedKPI = null;
 
-// =======================  تابع خواندن از گوگل‌شیت (فرمت gviz/tq) =======================
 async function loadGoogleSheetData() {
   const sheetId = "1j5qHAki1YfxIffQ9cO91Dc0w3b3bETSgpZbVfjfYjhY";
   const sheetName = "Long Format";
@@ -383,39 +366,35 @@ async function loadGoogleSheetData() {
   try {
     const response = await fetch(url);
     const text = await response.text();
-    // حذف مقدمه و انتهای JSONP (google.visualization.Query.setResponse(...))
     const jsonStart = text.indexOf('{');
     const jsonEnd = text.lastIndexOf('}');
     const jsonStr = text.substring(jsonStart, jsonEnd + 1);
     const data = JSON.parse(jsonStr);
     
     const rows = data.table.rows;
-    const cols = data.table.cols;
     if (!rows || rows.length === 0) throw new Error("داده‌ای در شیت پیدا نشد");
     
-    // ستون‌ها: معمولاً ستون0 = Table1 (نام شاخص), ستون1 = Week, ستون2 = Data
-    let colIndexKPI = 0, colIndexWeek = 1, colIndexValue = 2;
-    // اگر سرستون داشتیم می‌توان تشخیص داد، ولی خیالمان راحت است که ترتیب همین است.
-    
+    // ستون‌ها: Table1, Week, Unit, Data
     sheetDataMap = {};
     availableWeeks = [];
     const weekSet = new Set();
     
     for (let row of rows) {
-      const kpiCell = row.c[colIndexKPI];
-      const weekCell = row.c[colIndexWeek];
-      const valCell = row.c[colIndexValue];
+      const kpiCell = row.c[0];   // ستون Table1
+      const weekCell = row.c[1];  // ستون Week
+      const unitCell = row.c[2];  // ستون Unit (جدید)
+      const valCell = row.c[3];   // ستون Data
       
       let kpiName = kpiCell ? (kpiCell.v || "").toString().trim() : "";
       let week = weekCell ? (weekCell.v || "").toString().trim() : "";
+      let unit = unitCell ? (unitCell.v || "").toString().trim() : "";
       let value = (valCell && valCell.v !== undefined && valCell.v !== null) ? valCell.v : null;
       
       if (!kpiName || !week || value === null || value === "") continue;
-      // حذف ردیف‌های خراب مانند #VALUE!
       if (kpiName === "#VALUE!" || isNaN(parseFloat(value))) continue;
       
       if (!sheetDataMap[week]) sheetDataMap[week] = {};
-      sheetDataMap[week][kpiName] = value;
+      sheetDataMap[week][kpiName] = { value: parseFloat(value), unit: unit };
       weekSet.add(week);
     }
     
@@ -427,10 +406,8 @@ async function loadGoogleSheetData() {
     
     if (availableWeeks.length === 0) throw new Error("هفته معتبری یافت نشد");
     
-    // تنظیم هفته پیش‌فرض به آخرین هفته (جدیدترین)
     currentWeek = availableWeeks[availableWeeks.length - 1];
     
-    // پر کردن dropdown هفته
     const weekSelect = document.getElementById('weekFilter');
     weekSelect.innerHTML = "";
     availableWeeks.forEach(w => {
@@ -441,22 +418,26 @@ async function loadGoogleSheetData() {
       weekSelect.appendChild(option);
     });
     
-    // رویداد تغییر هفته
     weekSelect.onchange = (e) => {
       currentWeek = e.target.value;
       updateAllUI();
     };
     
-    // بارگذاری موفق - بروزرسانی کل صفحه
     updateAllUI();
     
   } catch (err) {
-    console.error("خطا در خواندن گوگل‌شیت:", err);
+    console.error("خطا:", err);
     document.getElementById('canvas').innerHTML = `<div class="empty-state"><div class="icon">⚠️</div><p>خطا در اتصال به گوگل‌شیت. اطمینان حاصل کنید شیت عمومی است.<br><small>${err.message}</small></p></div>`;
   }
 }
 
-// =======================  توابع کمکی =======================
+function getKPIValueAndUnit(kpiName, week) {
+  if (!sheetDataMap[week] || !sheetDataMap[week][kpiName]) {
+    return { value: null, unit: "" };
+  }
+  return sheetDataMap[week][kpiName];
+}
+
 function getAllDeps(name, visited = new Set()) {
   if (visited.has(name)) return visited;
   const kpi = kpiMap[name];
@@ -470,18 +451,6 @@ function getAllDeps(name, visited = new Set()) {
   return visited;
 }
 
-function getKPIValue(kpiName, week) {
-  if (!sheetDataMap[week]) return null;
-  const val = sheetDataMap[week][kpiName];
-  if (val === undefined || val === null) return null;
-  // اگر عدد است، با دو رقم اعشار نمایش بده (در صورت نیاز)
-  if (typeof val === 'number') {
-    return val % 1 === 0 ? val.toString() : val.toFixed(2);
-  }
-  return val.toString();
-}
-
-// =======================  رندر لیست سمت راست با مقادیر هفته جاری =======================
 function buildList() {
   const panel = document.getElementById('listPanel');
   panel.innerHTML = '';
@@ -507,10 +476,12 @@ function buildList() {
       nameSpan.textContent = k.name;
       nameSpan.style.flex = '1';
       
+      const { value, unit } = getKPIValueAndUnit(k.name, currentWeek);
+      const formattedValue = formatNumber(value, k.name, unit);
+      
       const valSpan = document.createElement('span');
       valSpan.className = 'kpi-value';
-      const val = getKPIValue(k.name, currentWeek);
-      valSpan.textContent = (val !== null && val !== undefined) ? val : "—";
+      valSpan.textContent = formattedValue;
       
       const dot = document.createElement('span');
       dot.className = 'team-dot';
@@ -534,7 +505,7 @@ function buildList() {
 
 function selectKPI(name) {
   selectedKPI = name;
-  buildList();        // بازسازی لیست برای هایلایت
+  buildList();
   renderTree(name);
 }
 
@@ -562,20 +533,16 @@ function updateAllUI() {
   if (selectedKPI && kpiMap[selectedKPI]) {
     renderTree(selectedKPI);
   } else if (selectedKPI === null) {
-    // اگر هیچ شاخصی انتخاب نشده بود، Net Profit را پیش‌فرض انتخاب کن (در صورت وجود)
     if (kpiMap["Net Profit"]) {
       selectKPI("Net Profit");
     } else if (raw.length) {
       selectKPI(raw[0].name);
-    } else {
-      document.getElementById('canvas').innerHTML = `<div class="empty-state"><div class="icon">📊</div><p>هیچ شاخصی در درخت وجود ندارد</p></div>`;
     }
   } else {
     renderTree(selectedKPI);
   }
 }
 
-// =======================  رندر درخت با نمایش مقدار =======================
 function renderTree(rootName) {
   const canvas = document.getElementById('canvas');
   const root = kpiMap[rootName];
@@ -585,14 +552,15 @@ function renderTree(rootName) {
   }
   
   const totalDeps = getAllDeps(rootName).size;
-  const rootValue = getKPIValue(rootName, currentWeek);
+  const { value: rootValue, unit: rootUnit } = getKPIValueAndUnit(rootName, currentWeek);
+  const formattedRootValue = formatNumber(rootValue, rootName, rootUnit);
   
   let html = `<div class="tree-container">`;
   html += `<div class="info-bar">
     <div class="info-card"><strong>${root.deps.length}</strong>شاخص اثرگذار مستقیم</div>
     <div class="info-card"><strong>${totalDeps}</strong>کل شاخص‌های زنجیره</div>
     <div class="info-card" style="border-right: 3px solid ${teamColors[root.team]}"><strong style="color:${teamColors[root.team]}">${root.team}</strong>تیم مالک</div>
-    <div class="info-card"><strong>${rootValue !== null ? rootValue : "—"}</strong>مقدار در هفته ${currentWeek}</div>
+    <div class="info-card"><strong>${formattedRootValue}</strong>مقدار در هفته ${currentWeek}</div>
   </div>`;
   
   html += renderNode(rootName, 0, new Set([rootName]));
@@ -611,8 +579,8 @@ function renderNode(name, depth, visited) {
   else if (isChild) nodeClass += ' child-node';
   else nodeClass += ' grand-node';
   
-  const value = getKPIValue(name, currentWeek);
-  const valueHtml = (value !== null && value !== undefined) ? `<span class="kpi-number">${value}</span>` : '';
+  const { value, unit } = getKPIValueAndUnit(name, currentWeek);
+  const formattedValue = formatNumber(value, name, unit);
   
   let html = `<div style="display:inline-flex;flex-direction:column;align-items:flex-start;gap:8px;">`;
   
@@ -621,7 +589,10 @@ function renderNode(name, depth, visited) {
   if (!isRoot) {
     html += `<span class="team-tag" style="${isChild ? '' : `color:${color};background:${color}18;`}">${kpi.team}</span>`;
   }
-  html += valueHtml;
+  if (unit && unit !== "" && formattedValue !== "—") {
+    html += `<span class="unit-badge">${unit}</span>`;
+  }
+  html += `<span class="kpi-number">${formattedValue}</span>`;
   html += `</div>`;
 
   if (kpi.deps.length > 0 && depth < 2) {
@@ -635,12 +606,12 @@ function renderNode(name, depth, visited) {
       html += `<div style="width:20px;height:1px;background:#d3d1c7;flex-shrink:0;"></div>`;
       if (isCircular) {
         const cDep = getKPIInfo(dep);
-        const depValue = getKPIValue(dep, currentWeek);
-        const depValueHtml = (depValue !== null && depValue !== undefined) ? `<span class="kpi-number" style="background:#e0e0d5;">${depValue}</span>` : '';
+        const { value: depVal, unit: depUnit } = getKPIValueAndUnit(dep, currentWeek);
+        const depFormatted = formatNumber(depVal, dep, depUnit);
         html += `<div class="node-box grand-node" style="opacity:0.6;cursor:default;" title="تکراری - از قبل نمایش داده شده">`;
         html += `<span>${dep}</span>`;
         html += `<span class="team-tag" style="color:${teamColors[cDep.team]||'#888'};background:${teamColors[cDep.team]||'#888'}18;">${cDep.team}</span>`;
-        html += depValueHtml;
+        html += `<span class="kpi-number">${depFormatted}</span>`;
         html += `<span style="font-size:10px;opacity:0.5;">↩</span>`;
         html += `</div>`;
       } else {
@@ -670,8 +641,7 @@ function escName(name) {
   return name.replace(/'/g, "\\'");
 }
 
-// =======================  شروع برنامه: بارگیری داده از گوگل‌شیت =======================
-// ابتدا تیم‌ها را بساز (دکمه‌ها)
+// ساخت دکمه‌های تیم
 teams.forEach(t => {
   const bar = document.querySelector('.teams-bar');
   const btn = document.createElement('button');
@@ -682,7 +652,6 @@ teams.forEach(t => {
   bar.appendChild(btn);
 });
 
-// بارگیری داده از گوگل‌شیت
 loadGoogleSheetData();
 </script>
 </body>
