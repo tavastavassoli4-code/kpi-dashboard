@@ -584,7 +584,6 @@ function renderNode(name, depth, visited) {
   html += `<div class="${cls}" onclick="selectKPI('${escName(name)}')" title="تیم: ${kpi.team}">
     <span>${name}</span>
     ${depth>0 ? `<span class="team-tag" style="${depth>1?`color:${color};background:${color}18;`:''}">${kpi.team}</span>` : ''}
-    ${unit ? `<span class="unit-badge">${unit}</span>` : ''}
     <span class="kpi-number">${fv}</span>
   </div>`;
   if (kpi.deps.length > 0 && depth < 2) {
