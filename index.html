@@ -554,7 +554,7 @@ function filterTeam(t) {
 
 function updateAllUI() {
   buildList();
-  if (!selectedKPI) selectKPI(kpiMap["Net Profit"] ? "Net Profit" : raw[0].name);
+  if (!selectedKPI) selectKPI(kpiMap["Net Profit"] ? "NMV" : raw[0].name);
   else renderTree(selectedKPI);
 }
 
