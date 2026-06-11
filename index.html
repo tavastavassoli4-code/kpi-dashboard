@@ -413,17 +413,52 @@ const numberFormats = {
 
 function formatNumber(value, kpiName, unitFromSheet = "") {
   if (value === null || value === undefined || isNaN(value)) return "—";
-  const s = numberFormats[kpiName] || { format: "number", decimals: 0 };
+  
+  const settings = numberFormats[kpiName] || { format: "number", decimals: 0, separator: false };
   let num = parseFloat(value);
-  if (s.format === "percent") {
-    let v = (num <= 1 && num >= 0) ? num * 100 : num;
-    return v.toFixed(s.decimals) + "%";
+  let formattedNumber = "";
+  let unit = "";
+  
+  // تعیین واحد نهایی (از تنظیمات یا از شیت)
+  if (settings.format === "currency" && settings.unit) {
+    unit = settings.unit;
+  } else if (unitFromSheet && unitFromSheet !== "") {
+    unit = unitFromSheet;
   }
-  if (s.format === "currency") {
-    return Number(num).toLocaleString('fa-IR') + " " + (s.unit || unitFromSheet || "");
+  
+  switch (settings.format) {
+    case "percent":
+      let percentValue = num;
+      if (num <= 1 && num >= 0) percentValue = num * 100;
+      formattedNumber = percentValue.toFixed(settings.decimals) + "%";
+      break;
+      
+    case "currency":
+      let currencyNum = num.toFixed(settings.decimals);
+      if (settings.separator !== false) {
+        currencyNum = Number(num).toLocaleString('fa-IR');
+      }
+      formattedNumber = currencyNum;
+      break;
+      
+    default:
+      let result = num.toFixed(settings.decimals);
+      if (settings.separator === true) {
+        result = Number(num).toLocaleString('fa-IR');
+        if (settings.decimals > 0) {
+          let decimalPart = Math.abs(num - Math.floor(num)).toFixed(settings.decimals).substring(1);
+          result = result + decimalPart;
+        }
+      }
+      formattedNumber = result;
+      break;
   }
-  let r = s.separator ? Number(num).toLocaleString('fa-IR') : num.toFixed(s.decimals);
-  return unitFromSheet ? r + " " + unitFromSheet : r;
+  
+  // اگر واحد وجود دارد، بعد از عدد اضافه کن (فقط یک بار)
+  if (unit && unit !== "") {
+    return formattedNumber + " " + unit;
+  }
+  return formattedNumber;
 }
 
 // =======================  بارگذاری داده از گوگل‌شیت =======================
