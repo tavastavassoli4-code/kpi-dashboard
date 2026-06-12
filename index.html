@@ -608,10 +608,21 @@ async function loadGoogleSheetData() {
       sheetDataMap[week][kpiName] = { value: parseFloat(value), unit };
       weekSet.add(week);
     }
+    
+    availableWeeks = [...weekSet].sort((a,b) => (parseInt(a.replace('W',''))||0) - (parseInt(b.replace('W',''))||0));
+    if (!availableWeeks.length) throw new Error("هفته‌ای یافت نشد");
+    currentWeek = availableWeeks[availableWeeks.length - 1];
+    const sel = document.getElementById('weekFilter');
+    sel.innerHTML = availableWeeks.map(w => `<option${w===currentWeek?' selected':''}>${w}</option>`).join('');
+    sel.onchange = e => { currentWeek = e.target.value; updateAllUI(); };
+    updateAllUI();
+    await loadDefinitions();
+  } catch(err) {
+    document.getElementById('canvas').innerHTML = `<div class="empty-state"><div class="icon">⚠️</div><p>خطا در اتصال به گوگل‌شیت.<br><small>${err.message}</small></p></div>`;
   }
 }
-  
-     // =======================  بارگذاری تعاریف از شیت defenition =======================
+
+// =======================  بارگذاری تعاریف از شیت defenition =======================
 async function loadDefinitions() {
   const sheetId = "1j5qHAki1YfxIffQ9cO91Dc0w3b3bETSgpZbVfjfYjhY";
   const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent("defenition")}`;
@@ -630,21 +641,11 @@ async function loadDefinitions() {
       if (!kpiName) continue;
       definitionsData.push({ kpiName, team, definition, formula });
     }
+    console.log("تعاریف بارگذاری شد:", definitionsData.length);
   } catch(err) {
     console.error("خطا در بارگذاری تعاریف:", err);
   }
 }
-    availableWeeks = [...weekSet].sort((a,b) => (parseInt(a.replace('W',''))||0) - (parseInt(b.replace('W',''))||0));
-    if (!availableWeeks.length) throw new Error("هفته‌ای یافت نشد");
-    currentWeek = availableWeeks[availableWeeks.length - 1];
-    const sel = document.getElementById('weekFilter');
-    sel.innerHTML = availableWeeks.map(w => `<option${w===currentWeek?' selected':''}>${w}</option>`).join('');
-    sel.onchange = e => { currentWeek = e.target.value; updateAllUI(); };
-    updateAllUI();
-    await loadDefinitions();
-  } catch(err) {
-    document.getElementById('canvas').innerHTML = `<div class="empty-state"><div class="icon">⚠️</div><p>خطا در اتصال به گوگل‌شیت.<br><small>${err.message}</small></p></div>`;
-  }
 
 
 function getKPIValueAndUnit(name, week) {
