@@ -625,7 +625,7 @@ async function loadGoogleSheetData() {
 // =======================  بارگذاری تعاریف از شیت defenition =======================
 async function loadDefinitions() {
   const sheetId = "1j5qHAki1YfxIffQ9cO91Dc0w3b3bETSgpZbVfjfYjhY";
-  const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent("defenition")}`;
+  const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent("Definition")}`;
   try {
     const text = await (await fetch(url)).text();
     const data = JSON.parse(text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1));
