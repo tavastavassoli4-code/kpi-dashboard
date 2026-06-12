@@ -596,10 +596,11 @@ function buildList() {
       item.className = 'kpi-item' + (selectedKPI === k.name ? ' active' : '');
       const { value, unit } = getKPIValueAndUnit(k.name, currentWeek);
       const totalDeps = getAllDeps(k.name).size;
-      // محاسبه اختلاف با هفته قبل
-   let diffHtml = "";
-   if (currentWeekIndex > 0) {
-     const prevWeek = availableWeeks[currentWeekIndex - 1];
+    // محاسبه اختلاف با هفته قبل
+let diffHtml = "";
+const currentIdx = availableWeeks.indexOf(currentWeek);
+if (currentIdx > 0) {
+  const prevWeek = availableWeeks[currentIdx - 1];
      const prevData = getKPIValueAndUnit(k.name, prevWeek);
      const diff = getWeekDiff(value, prevData.value, k.name);
      if (diff && diff.text && diff.text !== "NaN%") {
