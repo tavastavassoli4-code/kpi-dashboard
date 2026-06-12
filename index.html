@@ -135,7 +135,39 @@ body {
   color: var(--gray-medium2);
   margin-top: 4px;
 }
-
+/* ================================================================
+   نوار بالایی جدید (دیده‌بان / شاخص‌نامه)
+   ================================================================ */
+.top-nav {
+  background: #fff;
+  border-bottom: 1px solid var(--gray-light2);
+  padding: 8px 24px;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+.nav-btn {
+  font-family: 'IRANSansX', Tahoma, Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 20px;
+  border-radius: 24px;
+  border: 1px solid var(--gray-light2);
+  background: white;
+  color: var(--gray-medium1);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.nav-btn:hover {
+  background: var(--brand-pink-light4);
+  border-color: var(--brand-pink-light2);
+  color: var(--brand-pink);
+}
+.nav-btn.active {
+  background: var(--brand-pink);
+  color: #fff;
+  border-color: var(--brand-pink);
+}
 /* ================================================================
    نوار فیلتر تیم‌ها
    ================================================================ */
@@ -356,6 +388,11 @@ body {
     <select id="weekFilter"></select>
   </div>
 </div>
+   <!-- ===== نوار بالایی جدید با آیکون‌های دیده‌بان و شاخص‌نامه ===== -->
+<div class="top-nav">
+  <button id="btnObserver" class="nav-btn active">🔍 دیده‌بان</button>
+  <button id="btnGlossary" class="nav-btn">📜 شاخص‌نامه</button>
+</div>
 
 <div class="teams-bar">
   <span>🏢 تیم:</span>
@@ -547,6 +584,9 @@ let availableWeeks = [];
 let currentWeek = "";
 let activeTeam = 'all';
 let selectedKPI = null;
+let currentView = "observer"; // "observer" یا "glossary"
+let definitionsData = []; // ذخیره تعاریف از گوگل‌شیت
+let selectedGlossaryTeam = "all"; // تیم انتخاب شده در حالت شاخص‌نامه
 
 async function loadGoogleSheetData() {
   const sheetId = "1j5qHAki1YfxIffQ9cO91Dc0w3b3bETSgpZbVfjfYjhY";
@@ -568,6 +608,29 @@ async function loadGoogleSheetData() {
       sheetDataMap[week][kpiName] = { value: parseFloat(value), unit };
       weekSet.add(week);
     }
+     // =======================  بارگذاری تعاریف از شیت defenition =======================
+async function loadDefinitions() {
+  const sheetId = "1j5qHAki1YfxIffQ9cO91Dc0w3b3bETSgpZbVfjfYjhY";
+  const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent("defenition")}`;
+  try {
+    const text = await (await fetch(url)).text();
+    const data = JSON.parse(text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1));
+    const rows = data.table.rows;
+    if (!rows || !rows.length) return;
+    
+    definitionsData = [];
+    for (let row of rows) {
+      let kpiName = (row.c[0]?.v || "").toString().trim();
+      let team = (row.c[1]?.v || "").toString().trim();
+      let definition = (row.c[2]?.v || "").toString().trim();
+      let formula = (row.c[3]?.v || "").toString().trim();
+      if (!kpiName) continue;
+      definitionsData.push({ kpiName, team, definition, formula });
+    }
+  } catch(err) {
+    console.error("خطا در بارگذاری تعاریف:", err);
+  }
+}
     availableWeeks = [...weekSet].sort((a,b) => (parseInt(a.replace('W',''))||0) - (parseInt(b.replace('W',''))||0));
     if (!availableWeeks.length) throw new Error("هفته‌ای یافت نشد");
     currentWeek = availableWeeks[availableWeeks.length - 1];
@@ -575,6 +638,7 @@ async function loadGoogleSheetData() {
     sel.innerHTML = availableWeeks.map(w => `<option${w===currentWeek?' selected':''}>${w}</option>`).join('');
     sel.onchange = e => { currentWeek = e.target.value; updateAllUI(); };
     updateAllUI();
+    await loadDefinitions();
   } catch(err) {
     document.getElementById('canvas').innerHTML = `<div class="empty-state"><div class="icon">⚠️</div><p>خطا در اتصال به گوگل‌شیت.<br><small>${err.message}</small></p></div>`;
   }
@@ -646,11 +710,14 @@ function filterTeam(t) {
 }
 
 function updateAllUI() {
-  buildList();
-  if (!selectedKPI) selectKPI(kpiMap["Net Profit"] ? "NMV" : raw[0].name);
-  else renderTree(selectedKPI);
+  if (currentView === "observer") {
+    buildList();
+    if (!selectedKPI) selectKPI(kpiMap["Net Profit"] ? "NMV" : raw[0].name);
+    else renderTree(selectedKPI);
+  } else {
+    renderGlossary();
+  }
 }
-
 function renderTree(rootName) {
   const canvas = document.getElementById('canvas');
   const root = kpiMap[rootName];
@@ -665,6 +732,74 @@ function renderTree(rootName) {
     </div>
     ${renderNode(rootName, 0, new Set([rootName]))}
   </div>`;
+}
+   // =======================  رندر حالت شاخص‌نامه =======================
+function renderGlossary() {
+  const canvas = document.getElementById('canvas');
+  const listPanel = document.getElementById('listPanel');
+  
+  // رندر لیست تیم‌ها در پنل سمت راست
+  listPanel.innerHTML = '';
+  const teamsList = [...new Set(definitionsData.map(d => d.team))].sort();
+  
+  const allTeamsItem = document.createElement('div');
+  allTeamsItem.className = 'section-title';
+  allTeamsItem.textContent = 'انتخاب تیم';
+  listPanel.appendChild(allTeamsItem);
+  
+  // دکمه "همه تیم‌ها"
+  const allBtn = document.createElement('div');
+  allBtn.className = 'kpi-item' + (selectedGlossaryTeam === 'all' ? ' active' : '');
+  allBtn.innerHTML = `<span style="flex:1">📋 همه شاخص‌ها</span>`;
+  allBtn.onclick = () => { selectedGlossaryTeam = 'all'; renderGlossary(); };
+  listPanel.appendChild(allBtn);
+  
+  teamsList.forEach(team => {
+    const teamItem = document.createElement('div');
+    teamItem.className = 'kpi-item' + (selectedGlossaryTeam === team ? ' active' : '');
+    teamItem.innerHTML = `
+      <span style="flex:1">🏢 ${team}</span>
+      <span class="dep-count">${definitionsData.filter(d => d.team === team).length}</span>
+    `;
+    teamItem.onclick = () => { selectedGlossaryTeam = team; renderGlossary(); };
+    listPanel.appendChild(teamItem);
+  });
+  
+  // رندر محتوای اصلی (تعاریف)
+  const filtered = selectedGlossaryTeam === 'all' 
+    ? definitionsData 
+    : definitionsData.filter(d => d.team === selectedGlossaryTeam);
+  
+  if (filtered.length === 0) {
+    canvas.innerHTML = `<div class="empty-state"><div class="icon">📘</div><p>هیچ تعریفی برای این تیم یافت نشد</p></div>`;
+    return;
+  }
+  
+  let html = `<div class="tree-container" style="width:100%; max-width:900px;">`;
+  html += `<div class="info-bar"><div class="info-card"><strong>${filtered.length}</strong>شاخص دارای تعریف</div></div>`;
+  html += `<div style="display:flex;flex-direction:column;gap:16px;">`;
+  
+  filtered.forEach(def => {
+    html += `
+      <div style="background:white; border:1px solid var(--gray-light2); border-radius:16px; padding:16px; border-right:4px solid ${teamColors[def.team] || '#da1984'}">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
+          <strong style="font-size:15px; color:var(--gray-dark);">${def.kpiName}</strong>
+          <span class="team-tag" style="background:${teamColors[def.team] || '#da1984'}20; color:${teamColors[def.team] || '#da1984'}; padding:4px 12px; border-radius:20px; font-size:12px;">${def.team}</span>
+        </div>
+        <div style="margin-bottom:8px;">
+          <div style="color:var(--brand-pink); font-size:12px; margin-bottom:4px;">📖 تعریف:</div>
+          <div style="color:var(--gray-dark); font-size:13px; line-height:1.5;">${def.definition || '—'}</div>
+        </div>
+        <div>
+          <div style="color:var(--brand-teal); font-size:12px; margin-bottom:4px;">🧮 روش محاسبه:</div>
+          <div style="color:var(--gray-medium1); font-size:12px; font-family: monospace; background:var(--gray-light3); padding:8px; border-radius:8px;">${def.formula || '—'}</div>
+        </div>
+      </div>
+    `;
+  });
+  
+  html += `</div></div>`;
+  canvas.innerHTML = html;
 }
 
 function renderNode(name, depth, visited) {
@@ -734,7 +869,20 @@ teams.forEach(t => {
   btn.onclick = () => filterTeam(t);
   document.querySelector('.teams-bar').appendChild(btn);
 });
+// رویدادهای دکمه‌های نوار بالایی
+document.getElementById('btnObserver').addEventListener('click', () => {
+  currentView = "observer";
+  document.getElementById('btnObserver').classList.add('active');
+  document.getElementById('btnGlossary').classList.remove('active');
+  updateAllUI();
+});
 
+document.getElementById('btnGlossary').addEventListener('click', () => {
+  currentView = "glossary";
+  document.getElementById('btnGlossary').classList.add('active');
+  document.getElementById('btnObserver').classList.remove('active');
+  renderGlossary();
+});
 loadGoogleSheetData();
 </script>
 </body>
