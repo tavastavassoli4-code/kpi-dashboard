@@ -608,6 +608,9 @@ async function loadGoogleSheetData() {
       sheetDataMap[week][kpiName] = { value: parseFloat(value), unit };
       weekSet.add(week);
     }
+  }
+}
+  
      // =======================  بارگذاری تعاریف از شیت defenition =======================
 async function loadDefinitions() {
   const sheetId = "1j5qHAki1YfxIffQ9cO91Dc0w3b3bETSgpZbVfjfYjhY";
@@ -642,7 +645,7 @@ async function loadDefinitions() {
   } catch(err) {
     document.getElementById('canvas').innerHTML = `<div class="empty-state"><div class="icon">⚠️</div><p>خطا در اتصال به گوگل‌شیت.<br><small>${err.message}</small></p></div>`;
   }
-}
+
 
 function getKPIValueAndUnit(name, week) {
   return sheetDataMap[week]?.[name] || { value: null, unit: "" };
