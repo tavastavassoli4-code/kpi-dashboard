@@ -308,6 +308,30 @@ body {
 .team-dot[data-team="ساپلای کنترل"]    { background: #db2777; }  /* pink-700 */
 .team-dot[data-team="کامرشیال"]        { background: #0d9488; }  /* teal-700 */
 .team-dot[data-team="مالی"]            { background: #f9a8d4; }  /* pink-300 */
+
+/* ================================================================
+   رنگ‌های اختلاف (سبز = مثبت/خوب ، قرمز = منفی/بد)
+   ================================================================ */
+.diff-positive {
+  color: #10b981;  /* سبز */
+  background-color: rgba(16, 185, 129, 0.1);
+  border-radius: 20px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 500;
+  margin-right: 6px;
+  white-space: nowrap;
+}
+.diff-negative {
+  color: #ef4444;  /* قرمز */
+  background-color: rgba(239, 68, 68, 0.1);
+  border-radius: 20px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 500;
+  margin-right: 6px;
+  white-space: nowrap;
+}
 </style>
 </head>
 <body>
@@ -405,28 +429,33 @@ const teamColors = {
 
 // =======================  تنظیمات فرمت اعداد =======================
 const numberFormats = {
-  "Conversion Rate":             { format: "percent",   decimals: 2 },
-  "Total Cart Abandonment Rate": { format: "percent",   decimals: 1 },
-  "Share of Voice (SOV)":        { format: "percent",   decimals: 0 },
-  "ATP":                         { format: "percent",   decimals: 2 },
-  "Uptime":                      { format: "percent",   decimals: 1 },
-  "Lack Rate":                   { format: "percent",   decimals: 1 },
-  "Net Profit":                  { format: "currency",  decimals: 0, unit: "ریال" },
-  "NMV":                         { format: "currency",  decimals: 0, unit: "ریال" },
-  "Cost per Order":              { format: "currency",  decimals: 0, unit: "ریال" },
-  "CRM Cost":                    { format: "currency",  decimals: 0, unit: "ریال" },
-  "FC Cost per Order":           { format: "currency",  decimals: 0, unit: "ریال" },
-  "Total Discount":              { format: "currency",  decimals: 0, unit: "ریال" },
-  "OPS Overhead Cost":           { format: "currency",  decimals: 0, unit: "ریال" },
-  "AOV":                         { format: "currency",  decimals: 0, unit: "ریال" },
-  "Session":                     { format: "number",    decimals: 0, separator: true },
-  "Orders":                      { format: "number",    decimals: 0, separator: true },
-  "Organic Impression":          { format: "number",    decimals: 0, separator: true },
-  "Brand Search Volume":         { format: "number",    decimals: 0, separator: true },
-  "Page Load Time":              { format: "number",    decimals: 1 },
-  "IPO":                         { format: "number",    decimals: 2 },
-  "MDD":                         { format: "number",    decimals: 2 },
-  "Item per Staff per hour":     { format: "number",    decimals: 1 },
+  // درصدی‌ها (مثال: افزایش خوب است)
+  "Conversion Rate":             { format: "percent",   decimals: 2, direction: "up" },
+  "Total Cart Abandonment Rate": { format: "percent",   decimals: 1, direction: "down" }, // افزایش بد است
+  "Share of Voice (SOV)":        { format: "percent",   decimals: 0, direction: "up" },
+  "ATP":                         { format: "percent",   decimals: 2, direction: "up" },
+  "Uptime":                      { format: "percent",   decimals: 1, direction: "up" },
+  "Lack Rate":                   { format: "percent",   decimals: 1, direction: "down" }, // افزایش بد است
+  
+  // ریالی‌ها
+  "Net Profit":                  { format: "currency",  decimals: 0, unit: "ریال", direction: "up" },
+  "NMV":                         { format: "currency",  decimals: 0, unit: "ریال", direction: "up" },
+  "Cost per Order":              { format: "currency",  decimals: 0, unit: "ریال", direction: "down" }, // هزینه کمتر بهتر
+  "CRM Cost":                    { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
+  "FC Cost per Order":           { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
+  "Total Discount":              { format: "currency",  decimals: 0, unit: "ریال", direction: "down" }, // تخفیف کمتر بهتر
+  "OPS Overhead Cost":           { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
+  "AOV":                         { format: "currency",  decimals: 0, unit: "ریال", direction: "up" },
+  
+  // اعداد
+  "Session":                     { format: "number",    decimals: 0, separator: true, direction: "up" },
+  "Orders":                      { format: "number",    decimals: 0, separator: true, direction: "up" },
+  "Organic Impression":          { format: "number",    decimals: 0, separator: true, direction: "up" },
+  "Brand Search Volume":         { format: "number",    decimals: 0, separator: true, direction: "up" },
+  "Page Load Time":              { format: "number",    decimals: 1, direction: "down" }, // زمان کمتر بهتر
+  "IPO":                         { format: "number",    decimals: 2, direction: "up" },
+  "MDD":                         { format: "number",    decimals: 2, direction: "down" },
+  "Item per Staff per hour":     { format: "number",    decimals: 1, direction: "up" },
 };
 
 function formatNumber(value, kpiName, unitFromSheet = "") {
@@ -478,7 +507,30 @@ function formatNumber(value, kpiName, unitFromSheet = "") {
   }
   return formattedNumber;
 }
-
+// =======================  محاسبه درصد اختلاف با هفته قبل =======================
+function getWeekDiff(currentVal, previousVal, kpiName) {
+  if (currentVal === null || previousVal === null || previousVal === 0) return null;
+  
+  const diff = ((currentVal - previousVal) / previousVal) * 100;
+  const absDiff = Math.abs(diff);
+  const direction = numberFormats[kpiName]?.direction || "up";
+  
+  // تعیین کلاس رنگ (بعداً در CSS تعریف می‌شود)
+  let colorClass = "";
+  let sign = diff >= 0 ? "+" : "-";
+  let formattedDiff = sign + absDiff.toFixed(1) + "%";
+  
+  // تعیین سبز یا قرمز بر اساس direction
+  if (direction === "up") {
+    // افزایش خوب = سبز, کاهش بد = قرمز
+    colorClass = diff >= 0 ? "diff-positive" : "diff-negative";
+  } else {
+    // کاهش خوب = سبز, افزایش بد = قرمز
+    colorClass = diff <= 0 ? "diff-positive" : "diff-negative";
+  }
+  
+  return { text: formattedDiff, class: colorClass };
+}
 // =======================  بارگذاری داده از گوگل‌شیت =======================
 let sheetDataMap = {};
 let availableWeeks = [];
@@ -544,16 +596,28 @@ function buildList() {
       item.className = 'kpi-item' + (selectedKPI === k.name ? ' active' : '');
       const { value, unit } = getKPIValueAndUnit(k.name, currentWeek);
       const totalDeps = getAllDeps(k.name).size;
-      item.innerHTML = `
-        <span style="flex:1">${k.name}</span>
-        ${totalDeps > 0 ? `<span class="dep-count">${totalDeps} ↓</span>` : ''}
-        <span class="kpi-value">${formatNumber(value, k.name, unit)}</span>
-        <span class="team-dot" style="background:${teamColors[k.team]}"></span>`;
+      // محاسبه اختلاف با هفته قبل
+   let diffHtml = "";
+   if (currentWeekIndex > 0) {
+     const prevWeek = availableWeeks[currentWeekIndex - 1];
+     const prevData = getKPIValueAndUnit(k.name, prevWeek);
+     const diff = getWeekDiff(value, prevData.value, k.name);
+     if (diff && diff.text && diff.text !== "NaN%") {
+    diffHtml = `<span class="${diff.class}">${diff.text}</span>`;
+     }
+   }
+
+   item.innerHTML = `
+     <span style="flex:1">${k.name}</span>
+     ${totalDeps > 0 ? `<span class="dep-count">${totalDeps} ↓</span>` : ''}
+     <span class="kpi-value">${formatNumber(value, k.name, unit)}</span>
+     ${diffHtml}
+     <span class="team-dot" style="background:${teamColors[k.team]}"></span>`;
       item.onclick = () => selectKPI(k.name);
       panel.appendChild(item);
-    });
-  });
-}
+       });
+     });
+   }
 
 function selectKPI(name) { selectedKPI = name; buildList(); renderTree(name); }
 
@@ -598,11 +662,23 @@ function renderNode(name, depth, visited) {
   const cls = 'node-box ' + (depth===0 ? 'root-node' : depth===1 ? 'child-node' : 'grand-node');
   const { value, unit } = getKPIValueAndUnit(name, currentWeek);
   const fv = formatNumber(value, name, unit);
+   // محاسبه اختلاف با هفته قبل برای نود
+let diffHtmlNode = "";
+const currentIdx = availableWeeks.indexOf(currentWeek);
+if (currentIdx > 0) {
+  const prevWeek = availableWeeks[currentIdx - 1];
+  const prevData = getKPIValueAndUnit(name, prevWeek);
+  const diff = getWeekDiff(value, prevData.value, name);
+  if (diff && diff.text && diff.text !== "NaN%") {
+    diffHtmlNode = `<span class="${diff.class}">${diff.text}</span>`;
+  }
+}
   let html = `<div style="display:inline-flex;flex-direction:column;align-items:flex-start;gap:8px;">`;
   html += `<div class="${cls}" onclick="selectKPI('${escName(name)}')" title="تیم: ${kpi.team}">
     <span>${name}</span>
     ${depth>0 ? `<span class="team-tag" style="${depth>1?`color:${color};background:${color}18;`:''}">${kpi.team}</span>` : ''}
     <span class="kpi-number">${fv}</span>
+    ${diffHtmlNode}
   </div>`;
   if (kpi.deps.length > 0 && depth < 2) {
     const nv = new Set([...visited, name]);
