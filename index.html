@@ -333,6 +333,7 @@ body {
    ================================================================ */
 .team-dot[data-team="ارتباطات"]         { background: var(--brand-pink); }
 .team-dot[data-team="پردازش و لجستیک"] { background: var(--brand-teal); }
+.team-dot[data-team="CX"]            { background: #f9a8d4; }  /* pink-300 */   
 .team-dot[data-team="پروداکت"]         { background: #f472b6; }  /* pink-400 */
 .team-dot[data-team="پشتیبانی"]        { background: #5eead4; }  /* teal-300 */
 .team-dot[data-team="تک"]              { background: #14b8a6; }  /* teal-500 */
@@ -426,12 +427,12 @@ const raw = [
   { name: "OPS Overhead Cost", team: "پشتیبانی", deps: [] },
   { name: "Page Load Time", team: "تک", deps: [] },
   { name: "Uptime", team: "تک", deps: [] },
-  { name: "NMV", team: "رشد", deps: ["Session","Conversion Rate","AOV"] },
+  { name: "NMV", team: "رشد", deps: ["Session(Meta)","Conversion Rate","AOV"] },
   { name: "Net Profit", team: "رشد", deps: ["NMV","Cost per Order"] },
   { name: "Total Discount", team: "رشد", deps: [] },
   { name: "Orders", team: "رشد", deps: ["Session","AOV"] },
   { name: "AOV", team: "رشد", deps: ["IPO","Total Discount"] },
-  { name: "Session", team: "رشد", deps: ["Snapp Pay Traffic Share","Organic Traffic","ECRM Traffic","Social Traffic"] },
+  { name: "Session(Meta)", team: "رشد", deps: ["Snapp Pay Traffic Share","Organic Traffic","ECRM Traffic","Social Traffic"] },
   { name: "Conversion Rate", team: "رشد", deps: ["Page Load Time","Total Discount","MDD","Total Cart Abandonment Rate","Uptime","Competitor Price Gap","ATP"] },
   { name: "Total CAC", team: "رشد", deps: [] },
   { name: "Keyword Ranking", team: "رشد", deps: [] },
@@ -601,25 +602,25 @@ const numberFormats = {
   "Dock-to-Stock":                                              { format: "number",  decimals: 0, unit: "ساعت", direction: "down" },
   "Inbound Processing Time":                                    { format: "number",  decimals: 0, unit: "دقیقه", direction: "down" },
   "Total development(Tech debt+ Tech feature + Support)":       { format: "number",  decimals: 0, unit: "ساعت", direction: "up" },
-  "MDD":                                   { format: "number",  decimals: 0, unit: "روز", direction: "down" },
-  "Processing Time":                       { format: "number",  decimals: 0, unit: "روز", direction: "down" },
-  "Packaging inventory DOI":               { format: "number",  decimals: 0, unit: "روز", direction: "up" },
-  "DOI Retail- Ave Inventory":             { format: "number",  decimals: 0, unit: "روز", direction: "up" },
-  "DOI Retail - Last Inventory":           { format: "number",  decimals: 0, unit: "روز", direction: "up" },
-  "DOI (Consignment)":                     { format: "number",  decimals: 0, unit: "روز", direction: "up" },
-  "CCC":                                   { format: "number",  decimals: 0, unit: "روز", direction: "down" },
-  "Payment Cycle":                         { format: "number",  decimals: 0, unit: "روز", direction: "down" },
-  "Procuring Time (Days)":                 { format: "number",  decimals: 0, unit: "روز", direction: "down" },
-  "Procuring Time (Supplier SLA)":         { format: "number",  decimals: 0, unit: "روز", direction: "down" },
-  "Procuring Time (Khanoumi SLA)":         { format: "number",  decimals: 0, unit: "روز", direction: "down" },
-  "Procuring Time (Inbound)":              { format: "number",  decimals: 0, unit: "روز", direction: "down" },
-  "Procuring Time (QC to Putaway)":        { format: "number",  decimals: 0, unit: "روز", direction: "down" },
-  "Procuring Time (Putaway)":              { format: "number",  decimals: 0, unit: "روز", direction: "down" },
-  "Procuring Time(Total Operation)":       { format: "number",  decimals: 0, unit: "روز", direction: "down" },
-  "Procuring Time ( Posting )":            { format: "number",  decimals: 0, unit: "روز", direction: "down" },
-  "Procuring Time(Finance Check)":         { format: "number",  decimals: 0, unit: "روز", direction: "down" },
-  "Cash Runway":                           { format: "number",  decimals: 0, unit: "روز", direction: "up" },
-  "Time to Hire Office staff":             { format: "number",  decimals: 0, unit: "روز", direction: "down" },
+  "MDD":                                   { format: "number",  decimals: 2, unit: "روز", direction: "down" },
+  "Processing Time":                       { format: "number",  decimals: 2, unit: "روز", direction: "down" },
+  "Packaging inventory DOI":               { format: "number",  decimals: 1, unit: "روز", direction: "up" },
+  "DOI Retail- Ave Inventory":             { format: "number",  decimals: 1, unit: "روز", direction: "up" },
+  "DOI Retail - Last Inventory":           { format: "number",  decimals: 1, unit: "روز", direction: "up" },
+  "DOI (Consignment)":                     { format: "number",  decimals: 1, unit: "روز", direction: "up" },
+  "CCC":                                   { format: "number",  decimals: 2, unit: "روز", direction: "down" },
+  "Payment Cycle":                         { format: "number",  decimals: 2, unit: "روز", direction: "down" },
+  "Procuring Time (Days)":                 { format: "number",  decimals: 2, unit: "روز", direction: "down" },
+  "Procuring Time (Supplier SLA)":         { format: "number",  decimals: 2, unit: "روز", direction: "down" },
+  "Procuring Time (Khanoumi SLA)":         { format: "number",  decimals: 2, unit: "روز", direction: "down" },
+  "Procuring Time (Inbound)":              { format: "number",  decimals: 2, unit: "روز", direction: "down" },
+  "Procuring Time (QC to Putaway)":        { format: "number",  decimals: 2, unit: "روز", direction: "down" },
+  "Procuring Time (Putaway)":              { format: "number",  decimals: 2, unit: "روز", direction: "down" },
+  "Procuring Time(Total Operation)":       { format: "number",  decimals: 2, unit: "روز", direction: "down" },
+  "Procuring Time ( Posting )":            { format: "number",  decimals: 2, unit: "روز", direction: "down" },
+  "Procuring Time(Finance Check)":         { format: "number",  decimals: 2, unit: "روز", direction: "down" },
+  "Cash Runway":                           { format: "number",  decimals: 2, unit: "روز", direction: "up" },
+  "Time to Hire Office staff":             { format: "number",  decimals: 2, unit: "روز", direction: "down" },
    
 
   
