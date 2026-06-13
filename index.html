@@ -477,14 +477,11 @@ const teamColors = {
 // =======================  تنظیمات فرمت اعداد =======================
 const numberFormats = {
   // درصدی‌ها (مثال: افزایش خوب است)
-  "Total Cart Abandonment Rate": { format: "percent",   decimals: 1, direction: "down" }, // افزایش بد است
-  "Share of Voice (SOV)":        { format: "percent",   decimals: 0, direction: "up" },
-  "ATP":                         { format: "percent",   decimals: 2, direction: "up" },
-  "Uptime":                      { format: "percent",   decimals: 1, direction: "up" },
+   "Uptime":                      { format: "percent",   decimals: 1, direction: "up" },
    "CSAT":                       { format: "percent",   decimals: 0, direction: "up" },
    "FCR":                        { format: "percent",   decimals: 1, direction: "up" },
    "OTD Express":                { format: "percent",   decimals: 2, direction: "up" },
-   "Lack Rate(Item)":            { format: "percent",   decimals: 2, direction: "down" },
+   "Lack Rate(Item)":            { format: "percent",   decimals: 2, direction: "down" },// افزایش بد است
    "Lack Rate(Order)":           { format: "percent",   decimals: 2, direction: "down" },
    "Return Rate(Item)":          { format: "percent",   decimals: 2, direction: "down" },
    "Return Rate(Order)":         { format: "percent",   decimals: 2, direction: "down" },
@@ -554,14 +551,46 @@ const numberFormats = {
    "Offer Acceptance Rate":                                   { format: "percent",   decimals: 2, direction: "up" },
 
   // ریالی‌ها
-  "Net Profit":                  { format: "currency",  decimals: 0, unit: "ریال", direction: "up" },
-  "NMV":                         { format: "currency",  decimals: 0, unit: "ریال", direction: "up" },
-  "Cost per Order":              { format: "currency",  decimals: 0, unit: "ریال", direction: "down" }, // هزینه کمتر بهتر
-  "CRM Cost":                    { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
-  "FC Cost per Order":           { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
-  "Total Discount":              { format: "currency",  decimals: 0, unit: "ریال", direction: "down" }, // تخفیف کمتر بهتر
-  "OPS Overhead Cost":           { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
-  "AOV":                         { format: "currency",  decimals: 0, unit: "ریال", direction: "up" },
+  "Cost per Ticket":                       { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
+  "Cost per Call":                         { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
+  "CPO":                                   { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
+  "Cost per Delivery":                     { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
+  "FC Cost per Order":                     { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
+  "Packaging Cost per Order":              { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
+  "Return Value(Item)":                    { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
+  "Waste Return Value":                    { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
+  "Inventory Accuracy Cost":               { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
+  "packing cost":                          { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
+  "OPS Overhead Cost":                     { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
+  "Overhead OPS Cost per capita":          { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
+  "Office Overhead Cost":                  { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
+  "Office Cost per capita":                { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
+  "NMV":                                   { format: "currency",  decimals: 0, unit: "ریال", direction: "up" },
+  "Contribution Profit":                   { format: "currency",  decimals: 0, unit: "ریال", direction: "up" },
+  "Net Profit":                            { format: "currency",  decimals: 0, unit: "ریال", direction: "up" },
+  "fleet miss":                            { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
+  "Voucher":                               { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
+  "Discount Retail":                       { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
+  "Total Discount":                        { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
+  "AOV":                                   { format: "currency",  decimals: 0, unit: "ریال", direction: "up" },
+  "CPO Retention order":                   { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
+  "Total CAC":                             { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
+  "CAC (exclude BNPL & Discount)":         { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
+  "Campaign Revenue":                      { format: "currency",  decimals: 0, unit: "ریال", direction: "up" },
+  "Assisted Revenue(Social)":              { format: "currency",  decimals: 0, unit: "ریال", direction: "up" },
+  "Assisted Revenue(Mag)":                 { format: "currency",  decimals: 0, unit: "ریال", direction: "up" },
+  "Ad Revenue":                            { format: "currency",  decimals: 0, unit: "ریال", direction: "up" },
+  "Ads Revenue per Impression":            { format: "currency",  decimals: 0, unit: "ریال", direction: "up" },
+  "OOS Value Total":                       { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
+  "OOS Value Top SKU":                     { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
+  "Inventory Value(Retail P.P)":           { format: "currency",  decimals: 0, unit: "ریال", direction: "up" },
+  "Dead Stock Value(Retail P.P)":          { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
+  "Dead Stock Value Beauty(Consign GMV)":  { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
+  "Dead Stock Value Life(Consign GMV)":    { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
+  "Cash Balance":                          { format: "currency",  decimals: 0, unit: "ریال", direction: "up" },
+  "Available Cash":                        { format: "currency",  decimals: 0, unit: "ریال", direction: "up" },
+
+
   
   // اعداد
   "Session":                     { format: "number",    decimals: 0, separator: true, direction: "up" },
