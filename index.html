@@ -464,6 +464,7 @@ const teams = [...new Set(raw.map(k => k.team))].sort();
 // رنگ‌های تیم‌ها — همه از پالت رسمی برند خانومی
 const teamColors = {
   "ارتباطات":         "#da1984",   /* brand-pink اصلی */
+  "CX":         "#f9a8d4",   /* pink-300 */
   "پردازش و لجستیک": "#27cccc",   /* brand-teal اصلی */
   "پروداکت":         "#f472b6",   /* pink-400 */
   "پشتیبانی":        "#5eead4",   /* teal-300 */
@@ -477,7 +478,7 @@ const teamColors = {
 // =======================  تنظیمات فرمت اعداد =======================
 const numberFormats = {
   // درصدی‌ها (مثال: افزایش خوب است)
-   "Uptime":                      { format: "percent",   decimals: 1, direction: "up" },
+   "Uptime":                     { format: "percent",   decimals: 1, direction: "up" },
    "CSAT":                       { format: "percent",   decimals: 0, direction: "up" },
    "FCR":                        { format: "percent",   decimals: 1, direction: "up" },
    "OTD Express":                { format: "percent",   decimals: 2, direction: "up" },
@@ -485,7 +486,7 @@ const numberFormats = {
    "Lack Rate(Order)":           { format: "percent",   decimals: 2, direction: "down" },
    "Return Rate(Item)":          { format: "percent",   decimals: 2, direction: "down" },
    "Return Rate(Order)":         { format: "percent",   decimals: 2, direction: "down" },
-   "Waste Return Rate(Item)":    { format: "percent",   decimals: 2, direction: "down" },
+   "Waste after shipp(Item)":    { format: "percent",   decimals: 2, direction: "down" },
    "Return to Sellable Rate":    { format: "percent",   decimals: 2, direction: "up" },
    "Recovery Value Rate":        { format: "percent",   decimals: 2, direction: "up" },
    "Inventory Accuracy":         { format: "percent",   decimals: 1, direction: "up" },
@@ -550,6 +551,7 @@ const numberFormats = {
    "Content Conversion Impact":                               { format: "percent",   decimals: 2, direction: "up" },
    "Offer Acceptance Rate":                                   { format: "percent",   decimals: 2, direction: "up" },
 
+   
   // ریالی‌ها
   "Cost per Ticket":                       { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
   "Cost per Call":                         { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
@@ -558,7 +560,7 @@ const numberFormats = {
   "FC Cost per Order":                     { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
   "Packaging Cost per Order":              { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
   "Return Value(Item)":                    { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
-  "Waste Return Value":                    { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
+  "Waste after shipp Value":               { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
   "Inventory Accuracy Cost":               { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
   "packing cost":                          { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
   "OPS Overhead Cost":                     { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
@@ -590,17 +592,76 @@ const numberFormats = {
   "Cash Balance":                          { format: "currency",  decimals: 0, unit: "ریال", direction: "up" },
   "Available Cash":                        { format: "currency",  decimals: 0, unit: "ریال", direction: "up" },
 
+   
+// زمانی ها
+  "SLA Handeling Ticket":                                       { format: "number",  decimals: 0, unit: "ساعت", direction: "down" },
+  "FRT Call":                                                   { format: "number",  decimals: 0, unit: "ثانیه", direction: "down" },
+  "FRT Chat":                                                   { format: "number",  decimals: 0, unit: "دقیقه", direction: "down" },
+  "Refund Cycle Time":                                          { format: "number",  decimals: 0, unit: "ساعت", direction: "down" },
+  "Dock-to-Stock":                                              { format: "number",  decimals: 0, unit: "ساعت", direction: "down" },
+  "Inbound Processing Time":                                    { format: "number",  decimals: 0, unit: "دقیقه", direction: "down" },
+  "Total development(Tech debt+ Tech feature + Support)":       { format: "number",  decimals: 0, unit: "ساعت", direction: "up" },
+  "MDD":                                   { format: "number",  decimals: 0, unit: "روز", direction: "down" },
+  "Processing Time":                       { format: "number",  decimals: 0, unit: "روز", direction: "down" },
+  "Packaging inventory DOI":               { format: "number",  decimals: 0, unit: "روز", direction: "up" },
+  "DOI Retail- Ave Inventory":             { format: "number",  decimals: 0, unit: "روز", direction: "up" },
+  "DOI Retail - Last Inventory":           { format: "number",  decimals: 0, unit: "روز", direction: "up" },
+  "DOI (Consignment)":                     { format: "number",  decimals: 0, unit: "روز", direction: "up" },
+  "CCC":                                   { format: "number",  decimals: 0, unit: "روز", direction: "down" },
+  "Payment Cycle":                         { format: "number",  decimals: 0, unit: "روز", direction: "down" },
+  "Procuring Time (Days)":                 { format: "number",  decimals: 0, unit: "روز", direction: "down" },
+  "Procuring Time (Supplier SLA)":         { format: "number",  decimals: 0, unit: "روز", direction: "down" },
+  "Procuring Time (Khanoumi SLA)":         { format: "number",  decimals: 0, unit: "روز", direction: "down" },
+  "Procuring Time (Inbound)":              { format: "number",  decimals: 0, unit: "روز", direction: "down" },
+  "Procuring Time (QC to Putaway)":        { format: "number",  decimals: 0, unit: "روز", direction: "down" },
+  "Procuring Time (Putaway)":              { format: "number",  decimals: 0, unit: "روز", direction: "down" },
+  "Procuring Time(Total Operation)":       { format: "number",  decimals: 0, unit: "روز", direction: "down" },
+  "Procuring Time ( Posting )":            { format: "number",  decimals: 0, unit: "روز", direction: "down" },
+  "Procuring Time(Finance Check)":         { format: "number",  decimals: 0, unit: "روز", direction: "down" },
+  "Cash Runway":                           { format: "number",  decimals: 0, unit: "روز", direction: "up" },
+  "Time to Hire Office staff":             { format: "number",  decimals: 0, unit: "روز", direction: "down" },
+   
 
   
   // اعداد
-  "Session":                     { format: "number",    decimals: 0, separator: true, direction: "up" },
-  "Orders":                      { format: "number",    decimals: 0, separator: true, direction: "up" },
-  "Organic Impression":          { format: "number",    decimals: 0, separator: true, direction: "up" },
-  "Brand Search Volume":         { format: "number",    decimals: 0, separator: true, direction: "up" },
-  "Page Load Time":              { format: "number",    decimals: 1, direction: "down" }, // زمان کمتر بهتر
-  "IPO":                         { format: "number",    decimals: 2, direction: "up" },
-  "MDD":                         { format: "number",    decimals: 2, direction: "down" },
-  "Item per Staff per hour":     { format: "number",    decimals: 1, direction: "up" },
+  "FRT Ticket":                                            { format: "number",    decimals: 0, separator: true, direction: "down" },
+  "Backlog":                                               { format: "number",    decimals: 0, separator: true, direction: "down" },
+  "Order not Process(reserved+notFF)":                     { format: "number",    decimals: 0, separator: true, direction: "down" },
+  "Session(Meta)":                                         { format: "number",    decimals: 0, separator: true, direction: "up" },
+  "Session(GA)":                                           { format: "number",    decimals: 0, separator: true, direction: "up" },
+  "Repeat Purchase Customer":                              { format: "number",    decimals: 0, separator: true, direction: "up" },
+  "NC":                                                    { format: "number",    decimals: 0, separator: true, direction: "up" },
+  "Brand Search Volume":                                   { format: "number",    decimals: 0, separator: true, direction: "up" },
+  "Snapp Pay Traffic":                                     { format: "number",    decimals: 0, separator: true, direction: "up" },
+  "Non-branded Organic Traffic":                           { format: "number",    decimals: 0, separator: true, direction: "up" },
+  "Organic Traffic":                                       { format: "number",    decimals: 0, separator: true, direction: "up" },
+  "Direct Traffic":                                        { format: "number",    decimals: 0, separator: true, direction: "up" },
+  "Click to Platform Rate (Social)":                       { format: "number",    decimals: 0, separator: true, direction: "up" },
+  "Click to Platform Rate (Mag)":                          { format: "number",    decimals: 0, separator: true, direction: "up" },
+  "Count of Closed ad customer in 3 months ago":           { format: "number",    decimals: 0, separator: true, direction: "up" },
+  "total Comment Backlog":                                 { format: "number",    decimals: 0, separator: true, direction: "down" },
+  "Posted comment (text) Backlog":                         { format: "number",    decimals: 0, separator: true, direction: "up" },
+  "Posted comment (image)Backlog":                         { format: "number",    decimals: 0, separator: true, direction: "up" },
+  "Decline comment Backlog":                               { format: "number",    decimals: 0, separator: true, direction: "up" },
+  "not cheked comment Backlog":                            { format: "number",    decimals: 0, separator: true, direction: "down" },
+  "Total Comment":                                         { format: "number",    decimals: 0, separator: true, direction: "up" },
+  "Posted comment (text)":                                 { format: "number",    decimals: 0, separator: true, direction: "up" },
+  "Posted comment (image)":                                { format: "number",    decimals: 0, separator: true, direction: "up" },
+  "Decline comment":                                       { format: "number",    decimals: 0, separator: true, direction: "up" },
+  "not cheked comment":                                    { format: "number",    decimals: 0, separator: true, direction: "down" },
+  "Content Improvement Count":                             { format: "number",    decimals: 0, separator: true, direction: "up" },
+  "Critical Attrition":                                    { format: "number",    decimals: 0, separator: true, direction: "down" },
+  "Attrition":                                             { format: "number",    decimals: 0, separator: true, direction: "down" },
+  "Office headcount":                                      { format: "number",    decimals: 0, separator: true, direction: "up" },
+  "OPS headcount":                                         { format: "number",    decimals: 0, separator: true, direction: "up" },
+  "Office Hires":                                          { format: "number",    decimals: 0, separator: true, direction: "up" },
+  "Office Exits":                                          { format: "number",    decimals: 0, separator: true, direction: "up" },
+  "OPS Hire":                                              { format: "number",    decimals: 0, separator: true, direction: "up" },
+  "OPS Exits":                                             { format: "number",    decimals: 0, separator: true, direction: "up" },
+  "Count of Open position":                                { format: "number",    decimals: 0, separator: true, direction: "up" },
+
+   
+
 };
 
 function formatNumber(value, kpiName, unitFromSheet = "") {
