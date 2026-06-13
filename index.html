@@ -394,7 +394,7 @@ body {
   <button id="btnGlossary" class="nav-btn">📜 شاخص‌نامه</button>
 </div>
 
-<div class="teams-bar">
+<div class="teams-bar" id="teamsBar">
   <span>🏢 تیم:</span>
   <button class="team-btn all-btn active" onclick="filterTeam('all')">همه</button>
 </div>
@@ -878,6 +878,7 @@ document.getElementById('btnObserver').addEventListener('click', () => {
   currentView = "observer";
   document.getElementById('btnObserver').classList.add('active');
   document.getElementById('btnGlossary').classList.remove('active');
+  document.getElementById('teamsBar').style.display = "flex";  // نمایش نوار تیم‌ها
   updateAllUI();
 });
 
@@ -885,6 +886,7 @@ document.getElementById('btnGlossary').addEventListener('click', () => {
   currentView = "glossary";
   document.getElementById('btnGlossary').classList.add('active');
   document.getElementById('btnObserver').classList.remove('active');
+  document.getElementById('teamsBar').style.display = "none";  // مخفی کردن نوار تیم‌ها
   renderGlossary();
 });
 loadGoogleSheetData();
