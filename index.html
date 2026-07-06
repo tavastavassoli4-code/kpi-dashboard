@@ -412,219 +412,12 @@ body {
 
 <script>
 // =======================  داده‌های ساختار درخت =======================
-const raw = [
-   //  تیم CX
-  { name: "CSAT", team: "CX", deps: [] },
-  { name: "NPS", team: "CX", deps: [] },
-  { name: "CES", team: "CX", deps: [] },
- //  تیم ارتباطات
-  { name: "SOV", team: "ارتباطات", deps: [] },   
-   //  تیم امور مشتریان
-  { name: "Comment Moderation Accuracy", team: "CX", deps: [] },
-  { name: "Share of Voice (SOV)", team: "ارتباطات", deps: [] },
-  { name: "SLA Handeling Ticket", team: "امور مشتریان", deps: [] },
-  { name: "FRT Ticket", team: "امور مشتریان", deps: [] },
-  { name: "FRT Call", team: "امور مشتریان", deps: [] },
-  { name: "FRT Chat", team: "امور مشتریان", deps: [] },
-  { name: "FCR", team: "امور مشتریان", deps: [] },
-  { name: "Refund Cycle Time", team: "امور مشتریان", deps: [] },
-  { name: "Cost per Ticket", team: "امور مشتریان", deps: [] },
-  { name: "Cost per Call", team: "امور مشتریان", deps: [] },
-   //  تیم پردازش و لجستیک
-  { name: "OTD Express", team: "پردازش و لجستیک", deps: [] },
-  { name: "MDD", team: "پردازش و لجستیک", deps: [] },
-  { name: "Processing Time", team: "پردازش و لجستیک", deps: [] },
-  { name: "CPO", team: "پردازش و لجستیک", deps: ["Cost per Delivery","FC Cost per Order","CRM cost per Order","Packaging inventory DOI"]},
-  { name: "Cost per Delivery", team: "پردازش و لجستیک", deps: [] },
-  { name: "FC Cost per Order", team: "پردازش و لجستیک", deps: ["Orders per Staff per hour"] },
-  { name: "packing cost", team: "پردازش و لجستیک", deps: [] },
-  { name: "CRM cost per Order", team: "پردازش و لجستیک", deps: ["Lack Rate(Item)","OTD Express"] },
-  { name: "Lack Rate(Item)", team: "پردازش و لجستیک", deps: [] },
-  { name: "Lack Rate(Order)", team: "پردازش و لجستیک", deps: [] },
-  { name: "Orders per Staff per hour", team: "پردازش و لجستیک", deps: [] },
-  { name: "Item per staff per hour", team: "پردازش و لجستیک", deps: [] },
-  { name: "Backlog", team: "پردازش و لجستیک", deps: [] },
-  { name: "Order not Process(reserved+notFF)", team: "پردازش و لجستیک", deps: [] },
-  { name: "Dock-to-Stock", team: "پردازش و لجستیک", deps: [] },
-  { name: "Inbound Processing Time", team: "پردازش و لجستیک", deps: [] },
-  { name: "Return Rate(Item)", team: "پردازش و لجستیک", deps: [] },
-  { name: "Return Rate(Order)", team: "پردازش و لجستیک", deps: [] },
-  { name: "Return Value(Item)", team: "پردازش و لجستیک", deps: [] },
-  { name: "Waste after shipp(Item)", team: "پردازش و لجستیک", deps: [] },
-  { name: "Waste after shipp Value", team: "پردازش و لجستیک", deps: [] },
-  { name: "Return to Sellable Rate", team: "پردازش و لجستیک", deps: [] },
-  { name: "Recovery Value Rate", team: "پردازش و لجستیک", deps: [] },
-  { name: "Inventory Accuracy Cost", team: "پردازش و لجستیک", deps: [] },
-  { name: "Inventory Accuracy", team: "پردازش و لجستیک", deps: [] },
-   //  تیم پروداکت
-  { name: "Add to Cart Rate", team: "پروداکت", deps: [] },
-  { name: "Checkout Conversion", team: "پروداکت", deps: [] },
-  { name: "Total Cart Abandonment Rate", team: "پروداکت", deps: [] },
-  { name: "Engaged Cart Abandonment Rate", team: "پروداکت", deps: [] },
-  { name: "Search Success Rate", team: "پروداکت", deps: [] },
-  { name: "Search Request", team: "پروداکت", deps: [] },
-  { name: "Search Per Session", team: "پروداکت", deps: [] },
-  { name: "PDP Views", team: "پروداکت", deps: [] },
-  { name: "PDP Views Per Search", team: "پروداکت", deps: [] },
-   //  تیم پشتیبانی
-  { name: "Packaging inventory DOI", team: "پشتیبانی", deps: [] },
-  { name: "Packaging Cost per Order", team: "پشتیبانی", deps: [] },
-  { name: "OPS Overhead Cost", team: "پشتیبانی", deps: [] },
-  { name: "Overhead OPS Cost per capita", team: "پشتیبانی", deps: [] },
-  { name: "Office Overhead Cost", team: "پشتیبانی", deps: [] },
-  { name: "Office Cost per capita", team: "پشتیبانی", deps: [] },
-   //  تیم تک
-  { name: "Total development(Tech debt+ Tech feature + Support)", team: "تک", deps: [] },
-  { name: "Support Share%", team: "تک", deps: [] },
-  { name: "Uptime", team: "تک", deps: [] },
-  { name: "Deployment Frequency", team: "تک", deps: [] },
-  { name: "Deployment Failure Rate", team: "تک", deps: [] },
-  { name: "MTTR", team: "تک", deps: [] },
-  { name: "Page Load Time", team: "تک", deps: [] }, 
-   //  تیم دیتا
-  { name: "Price All Retail(BasePrice)", team: "دیتا", deps: ["Price All Beauty Retail(BasePrice)","Price All Beauty Retail(SalesPrice)"] },
-  { name: "Price All Retail(SalesPrice)", team: "دیتا", deps: [] },
-  { name: "Price All MP(SalesPrice)", team: "دیتا", deps: ["Price All Accessory(SalesPrice)","Price All Beauty MP(SalesPrice)","Price All Fragrance (SalesPrice)","Price All Electrical & PC(SalesPrice)","Price All Health(SalesPrice)"] },
-  { name: "Price All Accessory(SalesPrice)", team: "دیتا", deps: [] },
-  { name: "Price All Beauty Retail(BasePrice)", team: "دیتا", deps: [] },
-  { name: "Price All Beauty Retail(SalesPrice)", team: "دیتا", deps: [] },
-  { name: "Price All Beauty MP(SalesPrice)", team: "دیتا", deps: [] },
-  { name: "Price All Electrical & PC(SalesPrice)", team: "دیتا", deps: [] },
-  { name: "Price All Fragrance (SalesPrice)", team: "دیتا", deps: [] },
-  { name: "Price All Health(SalesPrice)", team: "دیتا", deps: [] },
-  { name: "Price top SKU all Beauty Retail (BasePrice)", team: "دیتا", deps: ["Price top SKU all Beauty Retail (SalesPrice)"] },
-  { name: "Price top SKU all Beauty Retail (SalesPrice)", team: "دیتا", deps: [] },
-  { name: "Price top SKU all Beauty MP(SalesPrice)", team: "دیتا", deps: [] },
-  { name: "Price top SKU all MP Health(SalesPrice)", team: "دیتا", deps: [] },
-  { name: "Price top SKU all MP Electrical & PC(SalesPrice)", team: "دیتا", deps: [] },
-  { name: "Competitor Availability", team: "دیتا", deps: [] },
-   //  تیم رشد
-  { name: "NMV", team: "رشد", deps: ["Session(Meta)","Session(GA)","Conversion Rate(Meta)","Conversion Rate(GA)","AOV"] },
-  { name: "Contribution Margin%", team: "رشد", deps: [] },
-  { name: "PC1 wo PD%", team: "رشد", deps: [] },
-  { name: "Contribution Profit", team: "رشد", deps: ["Contribution Margin%","NMV"] },
-  { name: "Net Profit", team: "رشد", deps: ["NMV","CPO"] },
-  { name: "Discount Efficiency", team: "رشد", deps: ["Net Profit","Total Discount","Retail NMV Share%"] },
-  { name: "Retail NMV Share%", team: "رشد", deps: [] },
-  { name: "fleet miss", team: "رشد", deps: [] },
-  { name: "Voucher", team: "رشد", deps: [] },
-  { name: "Discount Retail", team: "رشد", deps: [] },
-  { name: "Total Discount", team: "رشد", deps: ["fleet miss","Voucher","Discount Retail"] },
-  { name: "Orders", team: "رشد", deps: ["Session(Meta)","Conversion Rate(Meta)"] },
-  { name: "AOV", team: "رشد", deps: ["IPO","Total Discount"] },
-  { name: "IPO", team: "رشد", deps: [] },
-  { name: "Session(Meta)", team: "رشد", deps: [] },
-  { name: "Session(GA)", team: "رشد", deps: ["Snapp Pay Traffic","Organic Traffic","Direct Traffic","ECRM Traffic","Social Traffic"] },
-  { name: "Conversion Rate(GA)", team: "رشد", deps: [] },
-  { name: "Conversion Rate(Meta)", team: "رشد", deps: ["MDD","Total Cart Abandonment Rate","Total Discount","Price top SKU all Beauty Retail (BasePrice)","Price top SKU all Beauty MP(SalesPrice)","Price All Electrical & PC(SalesPrice)","Price top SKU all MP Electrical & PC(SalesPrice)","Price All Retail(BasePrice)","Price All MP(SalesPrice)","Total ATP","Top SKU Beauty ATP","Top SKU Health ATP","Top SKU Electrical & PC ATP","Uptime","Page Load Time"] },
-  { name: "Repeat Purchase Customer", team: "رشد", deps: [] },
-  { name: "Repeat Purchase Rate", team: "رشد", deps: [] },
-  { name: "NC", team: "رشد", deps: [] },
-  { name: "CPO Retention order", team: "رشد", deps: [] },
-  { name: "Total CAC", team: "رشد", deps: [] },
-  { name: "CAC (exclude BNPL & Discount)", team: "رشد", deps: [] },
-  { name: "CAC Efficiency", team: "رشد", deps: [] },
-  { name: "Brand Search Volume", team: "رشد", deps: [] },
-  { name: "Snapp Pay Traffic", team: "رشد", deps: ["Snapp Pay Share %"] },
-  { name: "Non-branded Organic Traffic", team: "رشد", deps: ["Total CAC"] },
-  { name: "branded Organic Traffic", team: "رشد", deps: ["Snapp Pay Traffic","SOV"] },
-  { name: "Organic Traffic", team: "رشد", deps: ["Non-branded Organic Traffic","branded Organic Traffic"] },
-  { name: "Direct Traffic", team: "رشد", deps: [] },
-  { name: "ECRM Traffic", team: "رشد", deps: [] },
-  { name: "Social Traffic", team: "رشد", deps: [] },   
-  { name: "Click to Platform Rate (Social)", team: "رشد", deps: [] },
-  { name: "Click to Platform Rate (Mag)", team: "رشد", deps: [] },
-  { name: "ECRM NMV Share%", team: "رشد", deps: [] },
-  { name: "Organic NMV Share%", team: "رشد", deps: [] },
-  { name: "Snapp Pay Traffic NMV Share%", team: "رشد", deps: [] },
-  { name: "Snapp Pay Share %", team: "رشد", deps: [] },
-  { name: "Assisted Revenue(Social)", team: "رشد", deps: [] },
-  { name: "Assisted Revenue(Mag)", team: "رشد", deps: [] },
-  { name: "Campaign ROI", team: "رشد", deps: [] },
-  { name: "Ad Revenue", team: "رشد", deps: [] },
-  { name: "Fill Rate (Ads)", team: "رشد", deps: [] },
-  { name: "Ads Revenue per Impression", team: "رشد", deps: [] },
-  { name: "Count of Closed ad customer in 3 months ago", team: "رشد", deps: [] },
-  { name: "Repeat Advertisers Rate", team: "رشد", deps: [] },
+let raw = [];  // ساختار درخت از تب Config خوانده می‌شود
 
-   //  تیم ساپلای کنترل
-  { name: "OOS Rate Total", team: "ساپلای کنترل", deps: [] },
-  { name: "OOS Rate Beauty", team: "ساپلای کنترل", deps: [] },
-  { name: "OOS Rate Fragrance", team: "ساپلای کنترل", deps: [] },
-  { name: "OOS Rate Health", team: "ساپلای کنترل", deps: [] },
-  { name: "OOS Rate Electrical & PC", team: "ساپلای کنترل", deps: [] },
-  { name: "OOS Rate Accessory", team: "ساپلای کنترل", deps: [] },
-  { name: "OOS Rate Gold (Product id)", team: "ساپلای کنترل", deps: [] },
-  { name: "OOS Value Total", team: "ساپلای کنترل", deps: [] },
-  { name: "OOS Value Top SKU", team: "ساپلای کنترل", deps: [] },
-  { name: "OOS Top SKU Rate Total", team: "ساپلای کنترل", deps: [] },
-  { name: "OOS Value Top SKU Beauty", team: "ساپلای کنترل", deps: [] },
-  { name: "OOS Value Top SKU Health", team: "ساپلای کنترل", deps: [] },
-  { name: "OOS Value Top SKU Electrical", team: "ساپلای کنترل", deps: [] },
-  { name: "Inventory Value(Retail P.P)", team: "ساپلای کنترل", deps: [] },
-  { name: "Dead Stock Value(Retail P.P)", team: "ساپلای کنترل", deps: [] },
-  { name: "Dead Stock Value Beauty(Consign GMV)", team: "ساپلای کنترل", deps: [] },
-  { name: "Dead Stock Value Life(Consign GMV)", team: "ساپلای کنترل", deps: [] },
-  { name: "DOI Retail- Ave Inventory", team: "ساپلای کنترل", deps: [] },
-  { name: "DOI Retail - Last Inventory", team: "ساپلای کنترل", deps: [] },
-  { name: "DOI (Consignment)", team: "ساپلای کنترل", deps: [] },
-  { name: "Inventory Turnover (Retail)", team: "ساپلای کنترل", deps: [] },
-  { name: "Inventory Turnover Days (Retail)", team: "ساپلای کنترل", deps: [] },
-  { name: "Inventory Turnover (Consignment)", team: "ساپلای کنترل", deps: [] },
-  { name: "CCC", team: "ساپلای کنترل", deps: [] },
-  { name: "Payment Cycle", team: "ساپلای کنترل", deps: [] },
-  { name: "Sell-through (Retail)", team: "ساپلای کنترل", deps: [] },
-  { name: "Sell-through (Consignment)", team: "ساپلای کنترل", deps: [] },
-  { name: "Procuring Time (Days)", team: "ساپلای کنترل", deps: [] },
-  { name: "Procuring Time (Supplier SLA)", team: "ساپلای کنترل", deps: [] },
-  { name: "Procuring Time (Khanoumi SLA)", team: "ساپلای کنترل", deps: [] },
-  { name: "Procuring Time (Inbound)", team: "ساپلای کنترل", deps: [] },
-  { name: "Procuring Time (QC to Putaway)", team: "ساپلای کنترل", deps: [] },
-  { name: "Procuring Time (Putaway)", team: "ساپلای کنترل", deps: [] },
-  { name: "Procuring Time(Total Operation)", team: "ساپلای کنترل", deps: [] },
-  { name: "Procuring Time ( Posting )", team: "ساپلای کنترل", deps: [] },
-  { name: "Procuring Time(Finance Check)", team: "ساپلای کنترل", deps: [] },
-   //  تیم کامرشیال
-  { name: "Top SKU Beauty ATP", team: "کامرشیال", deps: [] },   
-  { name: "Top SKU Health ATP", team: "کامرشیال", deps: [] },   
-  { name: "Top SKU Electrical & PC ATP", team: "کامرشیال", deps: [] }, 
-  { name: "Total ATP", team: "کامرشیال", deps: ["Total Beauty ATP","Total Fragrance ATP","Total Health ATP","Total Electrical ATP","Total Accessory ATP"] },      
-  { name: "Total Beauty ATP", team: "کامرشیال", deps: [] },   
-  { name: "Total Fragrance ATP", team: "کامرشیال", deps: [] },   
-  { name: "Total Health ATP", team: "کامرشیال", deps: [] },   
-  { name: "Total Electrical ATP", team: "کامرشیال", deps: [] },   
-  { name: "Total Accessory ATP", team: "کامرشیال", deps: [] },   
-   //  تیم مالی
-  { name: "Cash Balance", team: "مالی", deps: [] }, 
-  { name: "Available Cash", team: "مالی", deps: [] }, 
-  { name: "Cash Runway", team: "مالی", deps: [] }, 
-  { name: "Payable Pressure", team: "مالی", deps: [] }, 
-  { name: "Cost of Funding", team: "مالی", deps: [] }, 
-  //  تیم محتوا
-  { name: "total Comment Backlog", team: "محتوا", deps: ["not cheked comment Backlog"] }, 
-  { name: "not cheked comment Backlog", team: "محتوا", deps: [] }, 
-  { name: "Comment Moderation", team: "محتوا", deps: ["Total Comment","not cheked comment"] },    
-  { name: "Total Comment", team: "محتوا", deps: [] }, 
-  { name: "not cheked comment", team: "محتوا", deps: [] }, 
-  { name: "Content Improvement Count", team: "محتوا", deps: [] }, 
-  { name: "Content Conversion Impact", team: "محتوا", deps: [] }, 
-  //  تیم منابع انسانی
-  { name: "Office headcount", team: "منابع انسانی", deps: [] }, 
-  { name: "OPS headcount", team: "منابع انسانی", deps: [] }, 
-  { name: "Office Hires", team: "منابع انسانی", deps: [] }, 
-  { name: "Office Exits", team: "منابع انسانی", deps: [] }, 
-  { name: "OPS Hire", team: "منابع انسانی", deps: [] }, 
-  { name: "OPS Exits", team: "منابع انسانی", deps: [] }, 
-  { name: "Count of Open position", team: "منابع انسانی", deps: [] }, 
-  { name: "Time to Hire Office staff", team: "منابع انسانی", deps: [] }, 
-
-];
-
-const kpiMap = {};
-raw.forEach(k => { kpiMap[k.name] = k; });
-
-const teams = [...new Set(raw.map(k => k.team))].sort();
-
+let kpiMap = {};
+let teams = [];
+let targets = {};   // هدف هر شاخص از تب Config
+   
 // رنگ‌های تیم‌ها — همه از پالت رسمی برند خانومی
 const teamColors = {
   "ارتباطات":         "#da1984",   /* brand-pink اصلی */
@@ -640,208 +433,7 @@ const teamColors = {
 };
 
 // =======================  تنظیمات فرمت اعداد =======================
-const numberFormats = {
-  // درصدی‌ها (مثال: افزایش خوب است)
-   "Uptime":                     { format: "percent",   decimals: 1, direction: "up" },
-   "CSAT":                       { format: "percent",   decimals: 0, direction: "up" },
-   "FCR":                        { format: "percent",   decimals: 1, direction: "up" },
-   "OTD Express":                { format: "percent",   decimals: 2, direction: "up" },
-   "Lack Rate(Item)":            { format: "percent",   decimals: 2, direction: "down" },// افزایش بد است
-   "Lack Rate(Order)":           { format: "percent",   decimals: 2, direction: "down" },
-   "Return Rate(Item)":          { format: "percent",   decimals: 2, direction: "down" },
-   "Return Rate(Order)":         { format: "percent",   decimals: 2, direction: "down" },
-   "Waste after shipp(Item)":    { format: "percent",   decimals: 2, direction: "down" },
-   "Return to Sellable Rate":    { format: "percent",   decimals: 2, direction: "up" },
-   "Recovery Value Rate":        { format: "percent",   decimals: 2, direction: "up" },
-   "Inventory Accuracy":         { format: "percent",   decimals: 1, direction: "up" },
-   "Add to Cart Rate":           { format: "percent",   decimals: 1, direction: "up" },
-   "Checkout Conversion":                                     { format: "percent",   decimals: 1, direction: "up" },
-   "Total Cart Abandonment Rate":                             { format: "percent",   decimals: 1, direction: "down" },
-   "Engaged Cart Abandonment Rate":                           { format: "percent",   decimals: 1, direction: "down" },
-   "Search Success Rate":                                     { format: "percent",   decimals: 1, direction: "up" },
-   "Support Share%":                                          { format: "percent",   decimals: 1, direction: "down" },
-   "Uptime":                                                  { format: "percent",   decimals: 1, direction: "up" },
-   "Deployment Failure Rate":                                 { format: "percent",   decimals: 1, direction: "down" },
-   "Price All Retail(BasePrice)":                             { format: "percent",   decimals: 2, direction: "down" },
-   "Price All Retail(SalesPrice)":                            { format: "percent",   decimals: 2, direction: "down" },
-   "Price All MP(SalesPrice)":                                { format: "percent",   decimals: 2, direction: "down" },
-   "Price All Accessory(SalesPrice)":                         { format: "percent",   decimals: 2, direction: "down" },
-   "Price All Beauty Retail(BasePrice)":                      { format: "percent",   decimals: 2, direction: "down" },
-   "Price All Beauty Retail(SalesPrice)":                     { format: "percent",   decimals: 2, direction: "down" },
-   "Price All Beauty MP(SalesPrice)":                         { format: "percent",   decimals: 2, direction: "down" },
-   "Price All Electrical & PC(SalesPrice)":                   { format: "percent",   decimals: 2, direction: "down" },
-   "Price All Fragrance (SalesPrice)":                        { format: "percent",   decimals: 2, direction: "down" },
-   "Price All Health(SalesPrice)":                            { format: "percent",   decimals: 2, direction: "down" },
-   "Price top SKU all Beauty Retail (BasePrice)":             { format: "percent",   decimals: 2, direction: "down" },
-   "Price top SKU all Beauty Retail (SalesPrice)":            { format: "percent",   decimals: 2, direction: "down" },
-   "Price top SKU all Beauty MP(SalesPrice)":                 { format: "percent",   decimals: 2, direction: "down" },
-   "Price top SKU all MP Health(SalesPrice)":                 { format: "percent",   decimals: 2, direction: "down" },
-   "Price top SKU all MP Electrical & PC(SalesPrice)":        { format: "percent",   decimals: 2, direction: "down" },
-   "Competitor Availability":                                 { format: "percent",   decimals: 2, direction: "up" },
-   "Contribution Margin%":                                    { format: "percent",   decimals: 2, direction: "up" },
-   "PC1 wo PD%":                                              { format: "percent",   decimals: 2, direction: "up" },
-   "Retail NMV Share%":                                       { format: "percent",   decimals: 2, direction: "up" },
-   "Conversion Rate(GA)":                                     { format: "percent",   decimals: 2, direction: "up" },
-   "Conversion Rate(Meta)":                                   { format: "percent",   decimals: 2, direction: "up" },   
-   "Repeat Purchase Rate":                                    { format: "percent",   decimals: 2, direction: "up" },
-   "ECRM NMV Share%":                                         { format: "percent",   decimals: 2, direction: "up" },
-   "Organic NMV Share%":                                      { format: "percent",   decimals: 2, direction: "up" },
-   "Snapp Pay Traffic NMV Share%":                            { format: "percent",   decimals: 2, direction: "up" },
-   "Snapp Pay Share %":                                       { format: "percent",   decimals: 2, direction: "up" },
-   "Campaign ROI":                                            { format: "percent",   decimals: 2, direction: "up" },
-   "Fill Rate (Ads)":                                         { format: "percent",   decimals: 2, direction: "up" },
-   "Repeat Advertisers Rate":                                 { format: "percent",   decimals: 2, direction: "up" },
-   "OOS Rate Total":                                          { format: "percent",   decimals: 2, direction: "down" },
-   "OOS Rate Beauty":                                         { format: "percent",   decimals: 2, direction: "down" },
-   "OOS Rate Fragrance":                                      { format: "percent",   decimals: 2, direction: "down" },
-   "OOS Rate Health":                                         { format: "percent",   decimals: 2, direction: "down" },
-   "OOS Rate Electrical & PC":                                { format: "percent",   decimals: 2, direction: "down" },
-   "OOS Rate Accessory":                                      { format: "percent",   decimals: 2, direction: "down" },
-   "OOS Rate Gold (Product id)":                              { format: "percent",   decimals: 2, direction: "down" },
-   "OOS Top SKU Rate Total":                                  { format: "percent",   decimals: 2, direction: "down" },
-   "OOS Value Top SKU Beauty":                                { format: "percent",   decimals: 2, direction: "down" },
-   "OOS Value Top SKU Health":                                { format: "percent",   decimals: 2, direction: "down" },
-   "OOS Value Top SKU Electrical":                            { format: "percent",   decimals: 2, direction: "down" },
-   "Top SKU Beauty ATP":                                      { format: "percent",   decimals: 2, direction: "up" },
-   "Top SKU Health ATP":                                      { format: "percent",   decimals: 2, direction: "up" },
-   "Top SKU Electrical & PC ATP":                             { format: "percent",   decimals: 2, direction: "up" },
-   "Total Beauty ATP":                                        { format: "percent",   decimals: 2, direction: "up" },
-   "Total Fragrance ATP":                                     { format: "percent",   decimals: 2, direction: "up" },
-   "Total Health ATP":                                        { format: "percent",   decimals: 2, direction: "up" },
-   "Total Electrical ATP":                                    { format: "percent",   decimals: 2, direction: "up" },
-   "Total Accessory ATP":                                     { format: "percent",   decimals: 2, direction: "up" },
-   "Payable Pressure":                                        { format: "percent",   decimals: 2, direction: "down" },
-   "Cost of Funding":                                         { format: "percent",   decimals: 2, direction: "down" },
-   "Comment Moderation":                                      { format: "percent",   decimals: 2, direction: "up" },
-   "Content Conversion Impact":                               { format: "percent",   decimals: 2, direction: "up" },
-   "Offer Acceptance Rate":                                   { format: "percent",   decimals: 2, direction: "up" },
-
-   
-  // ریالی‌ها
-  "Cost per Ticket":                       { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
-  "Cost per Call":                         { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
-  "CPO":                                   { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
-  "Cost per Delivery":                     { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
-  "FC Cost per Order":                     { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
-  "Packaging Cost per Order":              { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
-  "Return Value(Item)":                    { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
-  "Waste after shipp Value":               { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
-  "Inventory Accuracy Cost":               { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
-  "packing cost":                          { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
-  "OPS Overhead Cost":                     { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
-  "Overhead OPS Cost per capita":          { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
-  "Office Overhead Cost":                  { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
-  "Office Cost per capita":                { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
-  "NMV":                                   { format: "currency",  decimals: 0, unit: "ریال", direction: "up" },
-  "Contribution Profit":                   { format: "currency",  decimals: 0, unit: "ریال", direction: "up" },
-  "Net Profit":                            { format: "currency",  decimals: 0, unit: "ریال", direction: "up" },
-  "fleet miss":                            { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
-  "Voucher":                               { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
-  "Discount Retail":                       { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
-  "Total Discount":                        { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
-  "AOV":                                   { format: "currency",  decimals: 0, unit: "ریال", direction: "up" },
-  "CPO Retention order":                   { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
-  "Total CAC":                             { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
-  "CAC (exclude BNPL & Discount)":         { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
-  "Campaign Revenue":                      { format: "currency",  decimals: 0, unit: "ریال", direction: "up" },
-  "Assisted Revenue(Social)":              { format: "currency",  decimals: 0, unit: "ریال", direction: "up" },
-  "Assisted Revenue(Mag)":                 { format: "currency",  decimals: 0, unit: "ریال", direction: "up" },
-  "Ad Revenue":                            { format: "currency",  decimals: 0, unit: "ریال", direction: "up" },
-  "Ads Revenue per Impression":            { format: "currency",  decimals: 0, unit: "ریال", direction: "up" },
-  "OOS Value Total":                       { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
-  "OOS Value Top SKU":                     { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
-  "Inventory Value(Retail P.P)":           { format: "currency",  decimals: 0, unit: "ریال", direction: "up" },
-  "Dead Stock Value(Retail P.P)":          { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
-  "Dead Stock Value Beauty(Consign GMV)":  { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
-  "Dead Stock Value Life(Consign GMV)":    { format: "currency",  decimals: 0, unit: "ریال", direction: "down" },
-  "Cash Balance":                          { format: "currency",  decimals: 0, unit: "ریال", direction: "up" },
-  "Available Cash":                        { format: "currency",  decimals: 0, unit: "ریال", direction: "up" },
-
-   
-// زمانی ها
-  "SLA Handeling Ticket":                                       { format: "number",  decimals: 0, unit: "ساعت", direction: "down" },
-  "FRT Call":                                                   { format: "number",  decimals: 0, unit: "ثانیه", direction: "down" },
-  "FRT Chat":                                                   { format: "number",  decimals: 0, unit: "دقیقه", direction: "down" },
-  "Refund Cycle Time":                                          { format: "number",  decimals: 0, unit: "ساعت", direction: "down" },
-  "Dock-to-Stock":                                              { format: "number",  decimals: 0, unit: "ساعت", direction: "down" },
-  "Inbound Processing Time":                                    { format: "number",  decimals: 0, unit: "دقیقه", direction: "down" },
-  "Total development(Tech debt+ Tech feature + Support)":       { format: "number",  decimals: 0, unit: "ساعت", direction: "up" },
-  "MDD":                                   { format: "number",  decimals: 2, unit: "روز", direction: "down" },
-  "Processing Time":                       { format: "number",  decimals: 2, unit: "روز", direction: "down" },
-  "Packaging inventory DOI":               { format: "number",  decimals: 1, unit: "روز", direction: "up" },
-  "DOI Retail- Ave Inventory":             { format: "number",  decimals: 1, unit: "روز", direction: "up" },
-  "DOI Retail - Last Inventory":           { format: "number",  decimals: 1, unit: "روز", direction: "up" },
-  "DOI (Consignment)":                     { format: "number",  decimals: 1, unit: "روز", direction: "up" },
-  "CCC":                                   { format: "number",  decimals: 2, unit: "روز", direction: "down" },
-  "Payment Cycle":                         { format: "number",  decimals: 2, unit: "روز", direction: "down" },
-  "Procuring Time (Days)":                 { format: "number",  decimals: 2, unit: "روز", direction: "down" },
-  "Procuring Time (Supplier SLA)":         { format: "number",  decimals: 2, unit: "روز", direction: "down" },
-  "Procuring Time (Khanoumi SLA)":         { format: "number",  decimals: 2, unit: "روز", direction: "down" },
-  "Procuring Time (Inbound)":              { format: "number",  decimals: 2, unit: "روز", direction: "down" },
-  "Procuring Time (QC to Putaway)":        { format: "number",  decimals: 2, unit: "روز", direction: "down" },
-  "Procuring Time (Putaway)":              { format: "number",  decimals: 2, unit: "روز", direction: "down" },
-  "Procuring Time(Total Operation)":       { format: "number",  decimals: 2, unit: "روز", direction: "down" },
-  "Procuring Time ( Posting )":            { format: "number",  decimals: 2, unit: "روز", direction: "down" },
-  "Procuring Time(Finance Check)":         { format: "number",  decimals: 2, unit: "روز", direction: "down" },
-  "Cash Runway":                           { format: "number",  decimals: 2, unit: "روز", direction: "up" },
-  "Time to Hire Office staff":             { format: "number",  decimals: 2, unit: "روز", direction: "down" },
-
-// نسبت ها
-  "NPS":                                                  { format: "number",  decimals: 2, unit: "از 5", direction: "up" },
-  "CES":                                                  { format: "number",  decimals: 2, unit: "از 5", direction: "up" },     
-  "Orders per Staff per hour":                            { format: "number",  decimals: 1, unit: "تعداد بر نفر بر ساعت", direction: "up" },   
-  "Item per staff per hour":                              { format: "number",  decimals: 1, unit: "تعداد بر نفر بر ساعت", direction: "up" },   
-  "Search Per Session":                                   { format: "number",  decimals: 2, unit: "", direction: "up" },   
-  "PDP Views Per Search":                                 { format: "number",  decimals: 2, unit: "", direction: "up" },   
-  "Discount Efficiency":                                  { format: "number",  decimals: 2, unit: "", direction: "up" },   
-  "CAC Efficiency":                                       { format: "number",  decimals: 2, unit: "", direction: "up" },   
-  "Inventory Turnover (Retail)":                          { format: "number",  decimals: 2, unit: "", direction: "up" },   
-  "Inventory Turnover Days (Retail)":                     { format: "number",  decimals: 2, unit: "", direction: "down" },   
-  "Inventory Turnover (Consignment)":                     { format: "number",  decimals: 2, unit: "", direction: "up" },   
-  "Sell-through (Retail)":                                { format: "number",  decimals: 2, unit: "", direction: "down" },   
-  "Sell-through (Consignment)":                           { format: "number",  decimals: 2, unit: "", direction: "down" },   
-
-  
-  // اعداد
-  "FRT Ticket":                                            { format: "number",    decimals: 0, separator: true, direction: "down" },
-  "Backlog":                                               { format: "number",    decimals: 0, separator: true, direction: "down" },
-  "Order not Process(reserved+notFF)":                     { format: "number",    decimals: 0, separator: true, direction: "down" },
-  "Session(Meta)":                                         { format: "number",    decimals: 0, separator: true, direction: "up" },
-  "Session(GA)":                                           { format: "number",    decimals: 0, separator: true, direction: "up" },
-  "Repeat Purchase Customer":                              { format: "number",    decimals: 0, separator: true, direction: "up" },
-  "NC":                                                    { format: "number",    decimals: 0, separator: true, direction: "up" },
-  "Brand Search Volume":                                   { format: "number",    decimals: 0, separator: true, direction: "up" },
-  "Snapp Pay Traffic":                                     { format: "number",    decimals: 0, separator: true, direction: "up" },
-  "Non-branded Organic Traffic":                           { format: "number",    decimals: 0, separator: true, direction: "up" },
-  "Organic Traffic":                                       { format: "number",    decimals: 0, separator: true, direction: "up" },
-  "Direct Traffic":                                        { format: "number",    decimals: 0, separator: true, direction: "up" },
-  "Click to Platform Rate (Social)":                       { format: "number",    decimals: 0, separator: true, direction: "up" },
-  "Click to Platform Rate (Mag)":                          { format: "number",    decimals: 0, separator: true, direction: "up" },
-  "Count of Closed ad customer in 3 months ago":           { format: "number",    decimals: 0, separator: true, direction: "up" },
-  "total Comment Backlog":                                 { format: "number",    decimals: 0, separator: true, direction: "down" },
-  "Posted comment (text) Backlog":                         { format: "number",    decimals: 0, separator: true, direction: "up" },
-  "Posted comment (image)Backlog":                         { format: "number",    decimals: 0, separator: true, direction: "up" },
-  "Decline comment Backlog":                               { format: "number",    decimals: 0, separator: true, direction: "up" },
-  "not cheked comment Backlog":                            { format: "number",    decimals: 0, separator: true, direction: "down" },
-  "Total Comment":                                         { format: "number",    decimals: 0, separator: true, direction: "up" },
-  "Posted comment (text)":                                 { format: "number",    decimals: 0, separator: true, direction: "up" },
-  "Posted comment (image)":                                { format: "number",    decimals: 0, separator: true, direction: "up" },
-  "Decline comment":                                       { format: "number",    decimals: 0, separator: true, direction: "up" },
-  "not cheked comment":                                    { format: "number",    decimals: 0, separator: true, direction: "down" },
-  "Content Improvement Count":                             { format: "number",    decimals: 0, separator: true, direction: "up" },
-  "Critical Attrition":                                    { format: "number",    decimals: 0, separator: true, direction: "down" },
-  "Attrition":                                             { format: "number",    decimals: 0, separator: true, direction: "down" },
-  "Office headcount":                                      { format: "number",    decimals: 0, separator: true, direction: "up" },
-  "OPS headcount":                                         { format: "number",    decimals: 0, separator: true, direction: "up" },
-  "Office Hires":                                          { format: "number",    decimals: 0, separator: true, direction: "up" },
-  "Office Exits":                                          { format: "number",    decimals: 0, separator: true, direction: "up" },
-  "OPS Hire":                                              { format: "number",    decimals: 0, separator: true, direction: "up" },
-  "OPS Exits":                                             { format: "number",    decimals: 0, separator: true, direction: "up" },
-  "Count of Open position":                                { format: "number",    decimals: 0, separator: true, direction: "up" },
-
-   
-
-};
+let numberFormats = {};  // فرمت‌ها از تب Config خوانده می‌شوند
 
 function formatNumber(value, kpiName, unitFromSheet = "") {
   if (value === null || value === undefined || isNaN(value)) return "—";
@@ -926,10 +518,68 @@ let currentView = "observer"; // "observer" یا "glossary"
 let definitionsData = []; // ذخیره تعاریف از گوگل‌شیت
 let selectedGlossaryTeam = "all"; // تیم انتخاب شده در حالت شاخص‌نامه
 
+// =======================  بارگذاری پیکربندی از تب Config =======================
+async function loadConfig() {
+  const sheetId = "1j5qHAki1YfxIffQ9cO91Dc0w3b3bETSgpZbVfjfYjhY";
+  const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent("Config")}`;
+  const text = await (await fetch(url)).text();
+  const data = JSON.parse(text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1));
+  const rows = data.table.rows || [];
+
+  raw = []; kpiMap = {}; numberFormats = {}; targets = {};
+  const val = c => (c && c.v !== null && c.v !== undefined) ? c.v : "";
+
+  for (let row of rows) {
+    const c = row.c || [];
+    const name = val(c[0]).toString().trim();
+    if (!name || name === "نام شاخص") continue;      // رد کردن سطر عنوان و خالی
+
+    const team = val(c[1]).toString().trim() || "نامشخص";
+    const depsStr = val(c[2]).toString().trim();
+    const deps = depsStr ? depsStr.split("،").map(x => x.trim()).filter(Boolean) : [];
+
+    const item = { name, team, deps };
+    raw.push(item);
+    kpiMap[name] = item;
+
+    const t = parseFloat(val(c[3]));
+    if (!isNaN(t)) targets[name] = t;
+
+    const sepRaw = val(c[7]);
+    const separator = (sepRaw === true) || (sepRaw.toString().toUpperCase() === "TRUE");
+    numberFormats[name] = {
+      format:    (val(c[5]).toString().trim() || "number"),
+      decimals:  parseInt(val(c[6])) || 0,
+      unit:      val(c[4]).toString().trim(),
+      separator: separator,
+      direction: (val(c[8]).toString().trim() || "up"),
+      important: (val(c[9]).toString().trim() !== "")
+    };
+  }
+
+  teams = [...new Set(raw.map(k => k.team))].sort();
+  buildTeamButtons();
+}
+
+// ساخت دکمه‌های تیم (از روی Config)
+function buildTeamButtons() {
+  const bar = document.querySelector('.teams-bar');
+  bar.querySelectorAll('.team-btn:not(.all-btn)').forEach(b => b.remove());
+  teams.forEach(t => {
+    const btn = document.createElement('button');
+    btn.className = 'team-btn';
+    btn.textContent = t;
+    btn.style.borderColor = (teamColors[t] || '#da1984') + '44';
+    btn.onclick = () => filterTeam(t);
+    bar.appendChild(btn);
+  });
+}
+   
 async function loadGoogleSheetData() {
   const sheetId = "1j5qHAki1YfxIffQ9cO91Dc0w3b3bETSgpZbVfjfYjhY";
   const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent("Long Format")}`;
   try {
+    await loadConfig();
     const text = await (await fetch(url)).text();
     const data = JSON.parse(text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1));
     const rows = data.table.rows;
@@ -1202,15 +852,8 @@ if (currentIdx > 0) {
   return html;
 }
 
-// ساخت دکمه‌های تیم
-teams.forEach(t => {
-  const btn = document.createElement('button');
-  btn.className = 'team-btn';
-  btn.textContent = t;
-  btn.style.borderColor = (teamColors[t] || '#da1984') + '44';
-  btn.onclick = () => filterTeam(t);
-  document.querySelector('.teams-bar').appendChild(btn);
-});
+// دکمه‌های تیم داخل loadConfig()/buildTeamButtons() ساخته می‌شوند
+   
 // رویدادهای دکمه‌های نوار بالایی
 document.getElementById('btnObserver').addEventListener('click', () => {
   currentView = "observer";
