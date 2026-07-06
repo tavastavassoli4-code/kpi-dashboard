@@ -271,6 +271,18 @@ body {
 .empty-state .icon      { font-size: 48px; margin-bottom: 16px; }
 .empty-state p          { font-size: 14px; color: var(--gray-medium2); }
 .tree-container         { min-width: 600px; }
+/* ===== درخت تاشو (نمایش تدریجی سطح‌به‌سطح) ===== */
+.node-row { display: flex; align-items: center; gap: 6px; margin: 5px 0; }
+.toggle-btn {
+  width: 20px; height: 20px; flex-shrink: 0; padding: 0;
+  border: 1px solid var(--gray-light2); background: #fff; border-radius: 6px;
+  cursor: pointer; font-size: 10px; line-height: 1; color: var(--brand-pink);
+  display: flex; align-items: center; justify-content: center; transition: all .15s;
+}
+.toggle-btn:hover { background: var(--brand-pink-light4); border-color: var(--brand-pink-light2); }
+.toggle-spacer { width: 20px; flex-shrink: 0; }
+.node-children { padding-right: 22px; margin-right: 9px; border-right: 1.5px solid var(--gray-light2); }
+.node-children.collapsed { display: none; }   
 
 /* ================================================================
    نودهای درخت
@@ -793,61 +805,68 @@ function renderGlossary() {
   html += `</div></div>`;
   canvas.innerHTML = html;
 }
-
+   
+function toggleNode(btn) {
+  const node = btn.closest('.tree-node');
+  const children = node && node.querySelector(':scope > .node-children');
+  if (!children) return;
+  const collapsed = children.classList.toggle('collapsed');
+  btn.textContent = collapsed ? '▸' : '▾';
+}
+   
 function renderNode(name, depth, visited) {
   const kpi = getKPIInfo(name);
   const color = teamColors[kpi.team] || '#868686';
   const cls = 'node-box ' + (depth===0 ? 'root-node' : depth===1 ? 'child-node' : 'grand-node');
   const { value, unit } = getKPIValueAndUnit(name, currentWeek);
   const fv = formatNumber(value, name, unit);
-   // محاسبه اختلاف با هفته قبل برای نود
-let diffHtmlNode = "";
-const currentIdx = availableWeeks.indexOf(currentWeek);
-if (currentIdx > 0) {
-  const prevWeek = availableWeeks[currentIdx - 1];
-  const prevData = getKPIValueAndUnit(name, prevWeek);
-  const diff = getWeekDiff(value, prevData.value, name);
-  if (diff && diff.text && diff.text !== "NaN%") {
-    diffHtmlNode = `<span class="${diff.class}">${diff.text}</span>`;
+
+  // اختلاف با هفته قبل
+  let diffHtmlNode = "";
+  const currentIdx = availableWeeks.indexOf(currentWeek);
+  if (currentIdx > 0) {
+    const prevData = getKPIValueAndUnit(name, availableWeeks[currentIdx - 1]);
+    const diff = getWeekDiff(value, prevData.value, name);
+    if (diff && diff.text && diff.text !== "NaN%") diffHtmlNode = `<span class="${diff.class}">${diff.text}</span>`;
   }
-}
-  let html = `<div style="display:inline-flex;flex-direction:column;align-items:flex-start;gap:8px;">`;
-  html += `<div class="${cls}" onclick="selectKPI('${escName(name)}')" title="تیم: ${kpi.team}">
+
+  const hasDeps = kpi.deps.length > 0;
+  const open = depth === 0;                 // ریشه باز، بقیه بسته
+  const toggle = hasDeps
+    ? `<button class="toggle-btn" onclick="event.stopPropagation();toggleNode(this)">${open ? '▾' : '▸'}</button>`
+    : `<span class="toggle-spacer"></span>`;
+
+  const box = `<div class="${cls}" onclick="selectKPI('${escName(name)}')" title="تیم: ${kpi.team}">
     <span>${name}</span>
     ${depth>0 ? `<span class="team-tag" style="${depth>1?`color:${color};background:${color}18;`:''}">${kpi.team}</span>` : ''}
     <span class="kpi-number">${fv}</span>
     ${diffHtmlNode}
   </div>`;
-  if (kpi.deps.length > 0 && depth < 2) {
+
+  let html = `<div class="tree-node"><div class="node-row">${toggle}${box}</div>`;
+
+  if (hasDeps) {
+    html += `<div class="node-children${open ? '' : ' collapsed'}">`;
     const nv = new Set([...visited, name]);
-    html += `<div style="display:flex;align-items:flex-start;gap:0;padding-right:${depth===0?20:16}px;">
-      <div style="width:1px;background:var(--gray-light2);align-self:stretch;margin-left:16px;flex-shrink:0;"></div>
-      <div style="display:flex;flex-direction:column;gap:8px;">`;
     kpi.deps.forEach(dep => {
-      html += `<div style="display:flex;align-items:center;gap:0;">
-        <div style="width:20px;height:1px;background:var(--gray-light2);flex-shrink:0;"></div>`;
       if (visited.has(dep)) {
         const cd = getKPIInfo(dep);
         const { value: dv, unit: du } = getKPIValueAndUnit(dep, currentWeek);
-        html += `<div class="node-box grand-node" style="opacity:0.6;cursor:default;">
-          <span>${dep}</span>
-          <span class="team-tag" style="color:${teamColors[cd.team]||'#868686'};background:${teamColors[cd.team]||'#868686'}18;">${cd.team}</span>
-          <span class="kpi-number">${formatNumber(dv, dep, du)}</span>
-          <span style="font-size:10px;opacity:0.5;">↩</span>
-        </div>`;
+        const cc = teamColors[cd.team] || '#868686';
+        html += `<div class="tree-node"><div class="node-row"><span class="toggle-spacer"></span>
+          <div class="node-box grand-node" style="opacity:0.6;cursor:default;">
+            <span>${dep}</span>
+            <span class="team-tag" style="color:${cc};background:${cc}18;">${cd.team}</span>
+            <span class="kpi-number">${formatNumber(dv, dep, du)}</span>
+            <span style="font-size:10px;opacity:0.5;">↩</span>
+          </div></div></div>`;
       } else {
         html += renderNode(dep, depth + 1, nv);
       }
-      html += `</div>`;
     });
-    html += `</div></div>`;
-  } else if (kpi.deps.length > 0 && depth >= 2) {
-    html += `<div style="display:flex;align-items:center;gap:8px;padding-right:16px;">
-      <div style="width:20px;height:1px;background:var(--gray-light2);flex-shrink:0;"></div>
-      <div class="node-box grand-node" style="opacity:0.7;" onclick="selectKPI('${escName(name)}')">
-        <span style="font-size:11px;color:var(--gray-medium2);">+${kpi.deps.length} شاخص دیگر ←</span>
-      </div></div>`;
+    html += `</div>`;
   }
+
   html += `</div>`;
   return html;
 }
