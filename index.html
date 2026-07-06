@@ -228,6 +228,21 @@ body {
   overflow-y: auto;
   padding: 12px 0;
 }
+
+.list-search {
+  display: flex; align-items: center; gap: 6px;
+  margin: 0 12px 8px; padding: 7px 10px;
+  border: 1px solid var(--gray-light2); border-radius: 12px; background: #fff;
+  position: sticky; top: 0; z-index: 5;
+}
+.list-search .search-icon { font-size: 13px; opacity: .55; }
+.list-search input { flex: 1; border: none; outline: none; background: transparent;
+  font-family: 'IRANSansX', Tahoma, Arial, sans-serif; font-size: 13px; color: var(--gray-dark); }
+.list-search .search-clear { border: none; background: var(--gray-light3); color: var(--gray-medium1);
+  border-radius: 50%; width: 18px; height: 18px; cursor: pointer; font-size: 10px;
+  display: flex; align-items: center; justify-content: center; padding: 0; flex-shrink: 0; }
+.list-search .search-clear:hover { background: var(--brand-pink-light4); color: var(--brand-pink); }   
+   
 .list-panel .section-title {
   font-size: 11px;
   font-weight: 700;
@@ -419,7 +434,14 @@ body {
       <p>در حال بارگیری داده‌ها از گوگل‌شیت ...</p>
     </div>
   </div>
-  <div class="list-panel" id="listPanel"></div>
+  <div class="list-panel" id="listPanel">
+    <div class="list-search" id="listSearch">
+      <span class="search-icon">🔍</span>
+      <input id="kpiSearch" type="text" placeholder="جستجوی شاخص..." oninput="applySearch(this.value)" autocomplete="off">
+      <button class="search-clear" id="searchClear" onclick="clearSearch()" style="display:none;">✕</button>
+    </div>
+    <div id="listResults"></div>
+  </div>
 </div>
 
 <script>
@@ -659,14 +681,32 @@ function getAllDeps(name, visited = new Set()) {
 function getKPIInfo(name) { return kpiMap[name] || { name, team: 'نامشخص', deps: [] }; }
 function escName(n) { return n.replace(/'/g, "\\'"); }
 
+let searchQuery = "";
+function applySearch(v) {
+  searchQuery = (v || "").trim().toLowerCase();
+  document.getElementById('searchClear').style.display = searchQuery ? 'flex' : 'none';
+  buildList();
+}
+function clearSearch() {
+  document.getElementById('kpiSearch').value = "";
+  applySearch("");
+}
+   
 function buildList() {
-  const panel = document.getElementById('listPanel');
+  document.getElementById('listSearch').style.display = 'flex';
+  const panel = document.getElementById('listResults');
   panel.innerHTML = '';
+  const q = searchQuery;
   const byTeam = {};
   raw.forEach(k => {
-    if (activeTeam !== 'all' && k.team !== activeTeam) return;
+    if (q) { if (!k.name.toLowerCase().includes(q)) return; }
+    else if (activeTeam !== 'all' && k.team !== activeTeam) return;
     (byTeam[k.team] = byTeam[k.team] || []).push(k);
   });
+  if (q && Object.keys(byTeam).length === 0) {
+    panel.innerHTML = '<div style="padding:16px;color:var(--gray-medium2);font-size:13px;text-align:center;">نتیجه‌ای یافت نشد</div>';
+    return;
+  }
   Object.keys(byTeam).sort().forEach(team => {
     const t = document.createElement('div'); t.className = 'section-title'; t.textContent = team; panel.appendChild(t);
     byTeam[team].forEach(k => {
@@ -740,8 +780,9 @@ function renderTree(rootName) {
    // =======================  رندر حالت شاخص‌نامه =======================
 function renderGlossary() {
   const canvas = document.getElementById('canvas');
-  const listPanel = document.getElementById('listPanel');
-  
+  const listPanel = document.getElementById('listResults');
+  document.getElementById('listSearch').style.display = 'none';   // جستجو در حالت شاخص‌نامه پنهان
+
   // رندر لیست تیم‌ها در پنل سمت راست
   listPanel.innerHTML = '';
   const teamsList = [...new Set(definitionsData.map(d => d.team))].sort();
