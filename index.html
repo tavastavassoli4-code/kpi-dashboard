@@ -317,6 +317,27 @@ body {
 .target-pill { font-size: 10px; padding: 2px 7px; border-radius: 20px; background: var(--gray-light3);
   color: var(--gray-medium1); margin-right: 4px; white-space: nowrap; }
 .node-box.root-node .target-pill { background: rgba(255,255,255,0.22); color: #fff; }
+/* ===== نمودار روند ===== */
+.trend-card { background: #fff; border: 1px solid var(--gray-light2); border-radius: 16px; padding: 14px 16px; margin-bottom: 24px; }
+.trend-title { font-size: 12px; color: var(--gray-medium2); margin-bottom: 6px; font-weight: 700; }
+.trend-svg { width: 100%; height: auto; display: block; max-height: 180px; }
+.trend-empty { font-size: 12px; color: var(--gray-medium2); padding: 8px 0; }
+/* ===== نمودار چندخطی: انتخابگر، راهنما، تولتیپ ===== */
+.trend-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; gap: 8px; }
+.trend-add-btn { border: 1px solid var(--brand-pink-light2); background: var(--brand-pink-light4); color: var(--brand-pink);
+  font-family: 'IRANSansX', Tahoma, Arial, sans-serif; font-size: 11px; padding: 4px 10px; border-radius: 20px; cursor: pointer; white-space: nowrap; }
+.trend-add-btn:hover { background: var(--brand-pink); color: #fff; }
+.trend-legend { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--gray-light2); }
+.trend-legend .lg-item { font-size: 11px; color: var(--gray-dark); display: flex; align-items: center; gap: 5px; }
+.trend-legend .lg-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+.trend-picker { position: fixed; z-index: 1050; background: #fff; border: 1px solid var(--gray-light2);
+  border-radius: 12px; box-shadow: 0 8px 28px rgba(0,0,0,.15); padding: 8px; max-height: 320px; overflow-y: auto; min-width: 220px; max-width: 340px; }
+.trend-picker .tp-title { font-size: 11px; font-weight: 700; color: var(--gray-medium1); padding: 4px 8px 8px; }
+.trend-picker .tp-row { display: flex; align-items: center; gap: 8px; padding: 6px 8px; font-size: 12.5px; color: var(--gray-dark); border-radius: 8px; cursor: pointer; }
+.trend-picker .tp-row:hover { background: var(--gray-light3); }
+.trend-picker .tp-empty { font-size: 12px; color: var(--gray-medium2); padding: 10px; }
+.trend-tip { position: fixed; z-index: 1100; background: #333; color: #fff; font-size: 11px; padding: 5px 9px; border-radius: 8px; pointer-events: none; white-space: nowrap; box-shadow: 0 4px 14px rgba(0,0,0,.2); }
+.trend-tip .tt-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-left: 5px; vertical-align: middle; }   
 /* ================================================================
    نودهای درخت
    ================================================================ */
@@ -782,6 +803,138 @@ function updateAllUI() {
     renderGlossary();
   }
 }
+const TREND_PALETTE = ['#f4a300','#7c4dff','#0088cc','#e5484d','#2d9d4f','#8a6d3b','#c026d3','#da1984'];
+let trendOverlays = new Set();
+let currentTrendRoot = null;
+let trendTipEl = null, trendPickerEl = null;
+
+function trendSeriesColor(idx) { return idx === 0 ? '#27cccc' : TREND_PALETTE[(idx-1) % TREND_PALETTE.length]; }
+function trendPoints(name) {
+  return availableWeeks.map((w,i) => {
+    const { value } = getKPIValueAndUnit(name, w);
+    return (value===null||value===undefined||isNaN(Number(value))) ? null : {i, v:Number(value)};
+  }).filter(Boolean);
+}
+
+function buildTrend(rootName) {
+  const W = 640, H = 150, padL = 12, padR = 12, padTop = 22, padBot = 26;
+  const n = availableWeeks.length;
+  const names = [rootName, ...[...trendOverlays].filter(x => x !== rootName)];
+  const seriesArr = names.map((nm,idx) => ({ name:nm, color:trendSeriesColor(idx), pts:trendPoints(nm) }));
+  const root = seriesArr[0];
+  if (!root || root.pts.length < 2) {
+    return '<div class="trend-empty">داده کافی برای نمودار روند نیست (حداقل دو هفته لازم است).</div>';
+  }
+  const drawn = seriesArr.filter(s => s.pts.length >= 1);
+
+  const tgt = targets[rootName];
+  let lo = Infinity, hi = -Infinity;
+  drawn.forEach(s => s.pts.forEach(p => { lo=Math.min(lo,p.v); hi=Math.max(hi,p.v); }));
+  if (tgt !== undefined) { lo=Math.min(lo,tgt); hi=Math.max(hi,tgt); }
+  if (hi === lo) { hi = lo + 1; lo = lo - 1; }
+  const gap = (hi-lo)*0.12; lo-=gap; hi+=gap;
+  const range = hi-lo;
+  const xAt = i => padL + (n===1?0:(i/(n-1))*(W-padL-padR));
+  const yAt = v => padTop + (1-(v-lo)/range)*(H-padTop-padBot);
+  const esc = x => String(x).replace(/\\/g,'\\\\').replace(/"/g,'&quot;').replace(/'/g,"\\'");
+
+  let tgtLine = '';
+  if (tgt !== undefined) {
+    const ty = yAt(tgt);
+    tgtLine = `<line x1="${padL}" y1="${ty.toFixed(1)}" x2="${W-padR}" y2="${ty.toFixed(1)}" stroke="#da1984" stroke-width="1.3" stroke-dasharray="6 4" opacity="0.6"/>
+      <text x="${padL+2}" y="${(ty-5).toFixed(1)}" font-size="11" fill="#da1984">هدف ${formatNumber(tgt, rootName, '')}</text>`;
+  }
+
+  let bodySvg = '';
+  drawn.forEach(s => {
+    let d = '';
+    s.pts.forEach((p,k)=>{ d += (k===0?'M':'L') + xAt(p.i).toFixed(1) + ' ' + yAt(p.v).toFixed(1) + ' '; });
+    bodySvg += `<path d="${d.trim()}" fill="none" stroke="${s.color}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`;
+    s.pts.forEach(p => {
+      const cx = xAt(p.i).toFixed(1), cy = yAt(p.v).toFixed(1);
+      const wLabel = availableWeeks[p.i];
+      const u = getKPIValueAndUnit(s.name, wLabel).unit;
+      const vLabel = formatNumber(p.v, s.name, u);
+      bodySvg += `<circle cx="${cx}" cy="${cy}" r="3" fill="${s.color}"/>`;
+      bodySvg += `<circle cx="${cx}" cy="${cy}" r="11" fill="transparent" style="cursor:pointer" onmouseenter="showTrendTip(event,'${esc(s.name)}','${wLabel}','${esc(vLabel)}','${s.color}')" onmousemove="moveTrendTip(event)" onmouseleave="hideTrendTip()"/>`;
+    });
+  });
+
+  const last = root.pts[root.pts.length-1];
+  const lx = xAt(last.i), ly = yAt(last.v);
+  const lastLabel = formatNumber(last.v, rootName, getKPIValueAndUnit(rootName, availableWeeks[last.i]).unit);
+  const lastFixed = `<circle cx="${lx.toFixed(1)}" cy="${ly.toFixed(1)}" r="4.5" fill="#27cccc" stroke="#fff" stroke-width="2"/>
+    <text x="${lx.toFixed(1)}" y="${(ly-10).toFixed(1)}" text-anchor="middle" font-size="12" font-weight="700" fill="#333">${lastLabel}</text>`;
+
+  const showEvery = n <= 12 ? 1 : Math.ceil(n/10);
+  let wlabels = '';
+  availableWeeks.forEach((w,i)=>{ if (i%showEvery===0 || i===n-1) wlabels += `<text x="${xAt(i).toFixed(1)}" y="${H-8}" text-anchor="middle" font-size="10" fill="#9a9a9a">${w}</text>`; });
+
+  const svg = `<svg viewBox="0 0 ${W} ${H}" class="trend-svg" xmlns="http://www.w3.org/2000/svg">${tgtLine}${bodySvg}${lastFixed}${wlabels}</svg>`;
+
+  let legend = '';
+  if (drawn.length > 1) {
+    legend = '<div class="trend-legend">' + drawn.map(s => `<span class="lg-item"><span class="lg-dot" style="background:${s.color}"></span>${s.name}</span>`).join('') + '</div>';
+  }
+  return svg + legend;
+}
+
+function refreshTrend(rootName) {
+  const body = document.getElementById('trendBody');
+  if (body) body.innerHTML = buildTrend(rootName);
+}
+
+function showTrendTip(e, series, week, val, color) {
+  if (!trendTipEl) { trendTipEl = document.createElement('div'); trendTipEl.className = 'trend-tip'; document.body.appendChild(trendTipEl); }
+  trendTipEl.innerHTML = `<span class="tt-dot" style="background:${color}"></span>${series} · ${week}: <b>${val}</b>`;
+  trendTipEl.style.display = 'block';
+  moveTrendTip(e);
+}
+function moveTrendTip(e) {
+  if (!trendTipEl) return;
+  let x = e.clientX + 12, y = e.clientY + 12;
+  const w = trendTipEl.offsetWidth, h = trendTipEl.offsetHeight;
+  if (x + w > window.innerWidth - 8) x = e.clientX - w - 12;
+  if (y + h > window.innerHeight - 8) y = e.clientY - h - 12;
+  trendTipEl.style.left = x + 'px'; trendTipEl.style.top = y + 'px';
+}
+function hideTrendTip() { if (trendTipEl) trendTipEl.style.display = 'none'; }
+
+function toggleTrendOverlay(name, rootName, on) {
+  if (on) trendOverlays.add(name); else trendOverlays.delete(name);
+  refreshTrend(rootName);
+}
+function openTrendPicker(btn, rootName) {
+  if (trendPickerEl && trendPickerEl.style.display !== 'none' && trendPickerEl.dataset.root === rootName) {
+    trendPickerEl.style.display = 'none'; return;
+  }
+  if (!trendPickerEl) {
+    trendPickerEl = document.createElement('div');
+    trendPickerEl.className = 'trend-picker';
+    document.body.appendChild(trendPickerEl);
+    document.addEventListener('click', (e) => {
+      if (trendPickerEl && trendPickerEl.style.display !== 'none' && !trendPickerEl.contains(e.target) && !e.target.classList.contains('trend-add-btn')) {
+        trendPickerEl.style.display = 'none';
+      }
+    });
+  }
+  const related = [...getAllDeps(rootName, new Set())];
+  if (related.length === 0) {
+    trendPickerEl.innerHTML = '<div class="tp-empty">این شاخص زیرشاخهٔ مرتبطی ندارد.</div>';
+  } else {
+    trendPickerEl.innerHTML = '<div class="tp-title">افزودن شاخص‌های مرتبط</div>' + related.map(nm =>
+      `<label class="tp-row"><input type="checkbox" ${trendOverlays.has(nm)?'checked':''} onchange="toggleTrendOverlay('${nm.replace(/'/g,"\\'")}','${rootName.replace(/'/g,"\\'")}',this.checked)"> ${nm}</label>`).join('');
+  }
+  trendPickerEl.dataset.root = rootName;
+  trendPickerEl.style.display = 'block'; trendPickerEl.style.visibility = 'hidden';
+  const r = btn.getBoundingClientRect();
+  const pw = trendPickerEl.offsetWidth, ph = trendPickerEl.offsetHeight;
+  let left = r.left; let top = r.bottom + 6;
+  if (left + pw > window.innerWidth - 8) left = window.innerWidth - pw - 8;
+  if (left < 8) left = 8;
+  if (top + ph > window.innerHeight - 8) top = Math.max(8, r.top - ph - 6);
+  trendPickerEl.style.left = left + 'px'; trendPickerEl.style.top = top + 'px'; trendPickerEl.style.visibility = 'visible';
+}   
 function renderTree(rootName) {
   const canvas = document.getElementById('canvas');
   const root = kpiMap[rootName];
@@ -799,6 +952,16 @@ function renderTree(rootName) {
       })()}
       ${targets[rootName] !== undefined ? `<div class="info-card"><strong>${formatNumber(targets[rootName], rootName, unit)}</strong>هدف</div>` : ''}
     </div>
+    ${(function(){
+      if (rootName !== currentTrendRoot) { trendOverlays = new Set(); currentTrendRoot = rootName; }
+      return `<div class="trend-card">
+        <div class="trend-head">
+          <div class="trend-title">روند هفتگی — ${rootName}</div>
+          <button class="trend-add-btn" onclick="event.stopPropagation();openTrendPicker(this,'${escName(rootName)}')">＋ شاخص مرتبط</button>
+        </div>
+        <div id="trendBody">${buildTrend(rootName)}</div>
+      </div>`;
+    })()}
     ${renderNode(rootName, 0, new Set([rootName]))}
   </div>`;
 }
