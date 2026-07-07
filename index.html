@@ -317,11 +317,6 @@ body {
 .target-pill { font-size: 10px; padding: 2px 7px; border-radius: 20px; background: var(--gray-light3);
   color: var(--gray-medium1); margin-right: 4px; white-space: nowrap; }
 .node-box.root-node .target-pill { background: rgba(255,255,255,0.22); color: #fff; }
-/* ===== نمودار روند ===== */
-.trend-card { background: #fff; border: 1px solid var(--gray-light2); border-radius: 16px; padding: 14px 16px; margin-bottom: 24px; }
-.trend-title { font-size: 12px; color: var(--gray-medium2); margin-bottom: 6px; font-weight: 700; }
-.trend-svg { width: 100%; height: auto; display: block; max-height: 180px; }
-.trend-empty { font-size: 12px; color: var(--gray-medium2); padding: 8px 0; }   
 /* ================================================================
    نودهای درخت
    ================================================================ */
@@ -787,60 +782,6 @@ function updateAllUI() {
     renderGlossary();
   }
 }
-function buildTrendSVG(name) {
-  const W = 640, H = 150, padL = 12, padR = 12, padTop = 22, padBot = 26;
-  const n = availableWeeks.length;
-  const vals = availableWeeks.map(w => {
-    const { value } = getKPIValueAndUnit(name, w);
-    return (value === null || value === undefined || isNaN(Number(value))) ? null : Number(value);
-  });
-  const pres = vals.map((v,i)=>({i,v})).filter(p => p.v !== null);
-  if (pres.length < 2) return '';
-
-  const tgt = targets[name];
-  let lo = Math.min(...pres.map(p=>p.v));
-  let hi = Math.max(...pres.map(p=>p.v));
-  if (tgt !== undefined) { lo = Math.min(lo, tgt); hi = Math.max(hi, tgt); }
-  if (hi === lo) { hi = lo + 1; lo = lo - 1; }
-  const gap = (hi - lo) * 0.12; lo -= gap; hi += gap;
-  const range = hi - lo;
-
-  const xAt = i => padL + (n === 1 ? 0 : (i/(n-1))*(W-padL-padR));
-  const yAt = v => padTop + (1-(v-lo)/range)*(H-padTop-padBot);
-
-  let d = '';
-  pres.forEach((p,k)=>{ d += (k===0?'M':'L') + xAt(p.i).toFixed(1) + ' ' + yAt(p.v).toFixed(1) + ' '; });
-  const dots = pres.map(p=>`<circle cx="${xAt(p.i).toFixed(1)}" cy="${yAt(p.v).toFixed(1)}" r="3" fill="#27cccc"/>`).join('');
-
-  const last = pres[pres.length-1];
-  const lx = xAt(last.i), ly = yAt(last.v);
-  const lastUnit = getKPIValueAndUnit(name, availableWeeks[last.i]).unit;
-  const lastLabel = formatNumber(last.v, name, lastUnit);
-
-  let tgtLine = '';
-  if (tgt !== undefined) {
-    const ty = yAt(tgt);
-    tgtLine = `<line x1="${padL}" y1="${ty.toFixed(1)}" x2="${W-padR}" y2="${ty.toFixed(1)}" stroke="#da1984" stroke-width="1.3" stroke-dasharray="6 4" opacity="0.85"/>
-      <text x="${padL+2}" y="${(ty-5).toFixed(1)}" font-size="11" fill="#da1984">هدف ${formatNumber(tgt, name, lastUnit)}</text>`;
-  }
-
-  const showEvery = n <= 12 ? 1 : Math.ceil(n/10);
-  let wlabels = '';
-  availableWeeks.forEach((w,i)=>{
-    if (i % showEvery === 0 || i === n-1) {
-      wlabels += `<text x="${xAt(i).toFixed(1)}" y="${H-8}" text-anchor="middle" font-size="10" fill="#9a9a9a">${w}</text>`;
-    }
-  });
-
-  return `<svg viewBox="0 0 ${W} ${H}" class="trend-svg" xmlns="http://www.w3.org/2000/svg">
-    ${tgtLine}
-    <path d="${d.trim()}" fill="none" stroke="#27cccc" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
-    ${dots}
-    <circle cx="${lx.toFixed(1)}" cy="${ly.toFixed(1)}" r="4.5" fill="#27cccc" stroke="#fff" stroke-width="2"/>
-    <text x="${lx.toFixed(1)}" y="${(ly-10).toFixed(1)}" text-anchor="middle" font-size="12" font-weight="700" fill="#333">${lastLabel}</text>
-    ${wlabels}
-  </svg>`;
-}   
 function renderTree(rootName) {
   const canvas = document.getElementById('canvas');
   const root = kpiMap[rootName];
@@ -858,13 +799,6 @@ function renderTree(rootName) {
       })()}
       ${targets[rootName] !== undefined ? `<div class="info-card"><strong>${formatNumber(targets[rootName], rootName, unit)}</strong>هدف</div>` : ''}
     </div>
-    ${(function(){
-      const svg = buildTrendSVG(rootName);
-      return `<div class="trend-card">
-        <div class="trend-title">روند هفتگی — ${rootName}</div>
-        ${svg || '<div class="trend-empty">داده کافی برای نمودار روند نیست (حداقل دو هفته لازم است).</div>'}
-      </div>`;
-    })()}
     ${renderNode(rootName, 0, new Set([rootName]))}
   </div>`;
 }
