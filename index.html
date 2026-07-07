@@ -330,6 +330,7 @@ body {
 .trend-legend { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--gray-light2); }
 .trend-legend .lg-item { font-size: 11px; color: var(--gray-dark); display: flex; align-items: center; gap: 5px; }
 .trend-legend .lg-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+.trend-note { font-size: 10.5px; color: var(--gray-medium2); margin-top: 6px; line-height: 1.7; }   
 .trend-picker { position: fixed; z-index: 1050; background: #fff; border: 1px solid var(--gray-light2);
   border-radius: 12px; box-shadow: 0 8px 28px rgba(0,0,0,.15); padding: 8px; max-height: 320px; overflow-y: auto; min-width: 220px; max-width: 340px; }
 .trend-picker .tp-title { font-size: 11px; font-weight: 700; color: var(--gray-medium1); padding: 4px 8px 8px; }
@@ -826,11 +827,23 @@ function buildTrend(rootName) {
     return '<div class="trend-empty">داده کافی برای نمودار روند نیست (حداقل دو هفته لازم است).</div>';
   }
   const drawn = seriesArr.filter(s => s.pts.length >= 1);
+  const normalize = drawn.length > 1;   // حالت مقایسه: هر شاخص مستقل نرمال می‌شود
+
+  drawn.forEach(s => { const vs = s.pts.map(p => p.v); s.min = Math.min(...vs); s.max = Math.max(...vs); });
+  const plot = (s, v) => {
+    if (!normalize) return v;
+    if (s.max === s.min) return 50;
+    return (v - s.min) / (s.max - s.min) * 100;
+  };
 
   const tgt = targets[rootName];
-  let lo = Infinity, hi = -Infinity;
-  drawn.forEach(s => s.pts.forEach(p => { lo=Math.min(lo,p.v); hi=Math.max(hi,p.v); }));
-  if (tgt !== undefined) { lo=Math.min(lo,tgt); hi=Math.max(hi,tgt); }
+  let lo, hi;
+  if (normalize) { lo = 0; hi = 100; }
+  else {
+    lo = Infinity; hi = -Infinity;
+    drawn.forEach(s => s.pts.forEach(p => { lo=Math.min(lo,p.v); hi=Math.max(hi,p.v); }));
+    if (tgt !== undefined) { lo=Math.min(lo,tgt); hi=Math.max(hi,tgt); }
+  }
   if (hi === lo) { hi = lo + 1; lo = lo - 1; }
   const gap = (hi-lo)*0.12; lo-=gap; hi+=gap;
   const range = hi-lo;
@@ -839,7 +852,7 @@ function buildTrend(rootName) {
   const esc = x => String(x).replace(/\\/g,'\\\\').replace(/"/g,'&quot;').replace(/'/g,"\\'");
 
   let tgtLine = '';
-  if (tgt !== undefined) {
+  if (tgt !== undefined && !normalize) {
     const ty = yAt(tgt);
     tgtLine = `<line x1="${padL}" y1="${ty.toFixed(1)}" x2="${W-padR}" y2="${ty.toFixed(1)}" stroke="#da1984" stroke-width="1.3" stroke-dasharray="6 4" opacity="0.6"/>
       <text x="${padL+2}" y="${(ty-5).toFixed(1)}" font-size="11" fill="#da1984">هدف ${formatNumber(tgt, rootName, '')}</text>`;
@@ -848,10 +861,10 @@ function buildTrend(rootName) {
   let bodySvg = '';
   drawn.forEach(s => {
     let d = '';
-    s.pts.forEach((p,k)=>{ d += (k===0?'M':'L') + xAt(p.i).toFixed(1) + ' ' + yAt(p.v).toFixed(1) + ' '; });
+    s.pts.forEach((p,k)=>{ d += (k===0?'M':'L') + xAt(p.i).toFixed(1) + ' ' + yAt(plot(s,p.v)).toFixed(1) + ' '; });
     bodySvg += `<path d="${d.trim()}" fill="none" stroke="${s.color}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`;
     s.pts.forEach(p => {
-      const cx = xAt(p.i).toFixed(1), cy = yAt(p.v).toFixed(1);
+      const cx = xAt(p.i).toFixed(1), cy = yAt(plot(s,p.v)).toFixed(1);
       const wLabel = availableWeeks[p.i];
       const u = getKPIValueAndUnit(s.name, wLabel).unit;
       const vLabel = formatNumber(p.v, s.name, u);
@@ -860,11 +873,14 @@ function buildTrend(rootName) {
     });
   });
 
-  const last = root.pts[root.pts.length-1];
-  const lx = xAt(last.i), ly = yAt(last.v);
-  const lastLabel = formatNumber(last.v, rootName, getKPIValueAndUnit(rootName, availableWeeks[last.i]).unit);
-  const lastFixed = `<circle cx="${lx.toFixed(1)}" cy="${ly.toFixed(1)}" r="4.5" fill="#27cccc" stroke="#fff" stroke-width="2"/>
-    <text x="${lx.toFixed(1)}" y="${(ly-10).toFixed(1)}" text-anchor="middle" font-size="12" font-weight="700" fill="#333">${lastLabel}</text>`;
+  let lastFixed = '';
+  if (!normalize) {
+    const last = root.pts[root.pts.length-1];
+    const lx = xAt(last.i), ly = yAt(last.v);
+    const lastLabel = formatNumber(last.v, rootName, getKPIValueAndUnit(rootName, availableWeeks[last.i]).unit);
+    lastFixed = `<circle cx="${lx.toFixed(1)}" cy="${ly.toFixed(1)}" r="4.5" fill="#27cccc" stroke="#fff" stroke-width="2"/>
+      <text x="${lx.toFixed(1)}" y="${(ly-10).toFixed(1)}" text-anchor="middle" font-size="12" font-weight="700" fill="#333">${lastLabel}</text>`;
+  }
 
   const showEvery = n <= 12 ? 1 : Math.ceil(n/10);
   let wlabels = '';
@@ -874,7 +890,8 @@ function buildTrend(rootName) {
 
   let legend = '';
   if (drawn.length > 1) {
-    legend = '<div class="trend-legend">' + drawn.map(s => `<span class="lg-item"><span class="lg-dot" style="background:${s.color}"></span>${s.name}</span>`).join('') + '</div>';
+    legend = '<div class="trend-legend">' + drawn.map(s => `<span class="lg-item"><span class="lg-dot" style="background:${s.color}"></span>${s.name}</span>`).join('') + '</div>'
+      + '<div class="trend-note">در حالت مقایسه، هر شاخص مستقل و بر اساس کمینه/بیشینهٔ خودش رسم می‌شود تا روندها قابل‌مقایسه باشند؛ مقدار واقعی هر نقطه را با نگه‌داشتن موس رویش ببینید.</div>';
   }
   return svg + legend;
 }
