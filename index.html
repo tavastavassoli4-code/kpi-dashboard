@@ -789,13 +789,20 @@ function renderTree(rootName) {
   const { value, unit } = getKPIValueAndUnit(rootName, currentWeek);
   canvas.innerHTML = `<div class="tree-container">
     <div class="info-bar">
-      <div class="info-card" style="border-right:3px solid ${teamColors[root.team]}"><strong style="color:${teamColors[root.team]}">${root.team}</strong>تیم مالک</div>
-      <div class="info-card"><strong>${formatNumber(value, rootName, unit)}</strong>هفته ${currentWeek}</div>
+         <div class="info-card"><strong>${formatNumber(value, rootName, unit)}</strong>هفته ${currentWeek}</div>
+      ${(function(){
+        const i = availableWeeks.indexOf(currentWeek);
+        if (i <= 0) return '';
+        const pw = availableWeeks[i-1];
+        const pd = getKPIValueAndUnit(rootName, pw);
+        return `<div class="info-card"><strong>${formatNumber(pd.value, rootName, pd.unit)}</strong>هفته ${pw}</div>`;
+      })()}
       ${targets[rootName] !== undefined ? `<div class="info-card"><strong>${formatNumber(targets[rootName], rootName, unit)}</strong>هدف</div>` : ''}
     </div>
     ${renderNode(rootName, 0, new Set([rootName]))}
   </div>`;
 }
+   
    // =======================  رندر حالت شاخص‌نامه =======================
 function renderGlossary() {
   const canvas = document.getElementById('canvas');
