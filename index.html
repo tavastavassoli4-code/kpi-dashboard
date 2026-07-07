@@ -313,7 +313,10 @@ body {
 .def-popover .def-formula { direction: ltr; text-align: left; background: var(--gray-light3);
   padding: 6px 10px; border-radius: 8px; font-size: 12px; margin-top: 4px; word-break: break-word; }
 .def-popover .def-empty { color: var(--gray-medium2); }   
-
+/* ===== نمایش هدف (بدون تغییر رنگ عدد شاخص) ===== */
+.target-pill { font-size: 10px; padding: 2px 7px; border-radius: 20px; background: var(--gray-light3);
+  color: var(--gray-medium1); margin-right: 4px; white-space: nowrap; }
+.node-box.root-node .target-pill { background: rgba(255,255,255,0.22); color: #fff; }
 /* ================================================================
    نودهای درخت
    ================================================================ */
@@ -786,10 +789,9 @@ function renderTree(rootName) {
   const { value, unit } = getKPIValueAndUnit(rootName, currentWeek);
   canvas.innerHTML = `<div class="tree-container">
     <div class="info-bar">
-      <div class="info-card"><strong>${root.deps.length}</strong>شاخص مستقیم</div>
-      <div class="info-card"><strong>${getAllDeps(rootName).size}</strong>کل زنجیره</div>
       <div class="info-card" style="border-right:3px solid ${teamColors[root.team]}"><strong style="color:${teamColors[root.team]}">${root.team}</strong>تیم مالک</div>
       <div class="info-card"><strong>${formatNumber(value, rootName, unit)}</strong>هفته ${currentWeek}</div>
+      ${targets[rootName] !== undefined ? `<div class="info-card"><strong>${formatNumber(targets[rootName], rootName, unit)}</strong>هدف</div>` : ''}
     </div>
     ${renderNode(rootName, 0, new Set([rootName]))}
   </div>`;
@@ -930,10 +932,12 @@ function renderNode(name, depth, visited) {
     ? `<button class="toggle-btn" onclick="event.stopPropagation();toggleNode(this)">${open ? '▾' : '▸'}</button>`
     : `<span class="toggle-spacer"></span>`;
 
+  const tgtPill = (targets[name] !== undefined)
+    ? `<span class="target-pill">هدف ${formatNumber(targets[name], name, unit)}</span>` : '';
   const box = `<div class="${cls}" onclick="selectKPI('${escName(name)}')" title="تیم: ${kpi.team}">
     <span>${name}</span>
     ${depth>0 ? `<span class="team-tag" style="${depth>1?`color:${color};background:${color}18;`:''}">${kpi.team}</span>` : ''}
-    <span class="kpi-number">${fv}</span>
+    <span class="kpi-number">${fv}</span>${tgtPill}
     ${diffHtmlNode}
     <span class="def-icon" onclick="event.stopPropagation();showDef(this,'${escName(name)}')">ⓘ</span>
   </div>`;
