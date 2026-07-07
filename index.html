@@ -297,7 +297,22 @@ body {
 .toggle-btn:hover { background: var(--brand-pink-light4); border-color: var(--brand-pink-light2); }
 .toggle-spacer { width: 20px; flex-shrink: 0; }
 .node-children { padding-right: 22px; margin-right: 9px; border-right: 1.5px solid var(--gray-light2); }
-.node-children.collapsed { display: none; }   
+.node-children.collapsed { display: none; } 
+/* ===== آیکون و پاپ‌آور تعریف/فرمول ===== */
+.def-icon { cursor: pointer; font-size: 12px; opacity: .65; margin-right: 2px; user-select: none; }
+.def-icon:hover { opacity: 1; }
+.node-box.root-node .def-icon { color: #fff; }
+.def-popover {
+  position: fixed; z-index: 1000; max-width: 320px;
+  background: #fff; border: 1px solid var(--gray-light2); border-radius: 12px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.14); padding: 14px 16px;
+  font-size: 12.5px; line-height: 1.8; color: var(--gray-dark);
+}
+.def-popover h4 { margin: 0 0 4px; font-size: 14px; color: var(--brand-pink); }
+.def-popover .def-label { font-weight: 700; color: var(--gray-medium1); font-size: 11px; display: block; margin-top: 8px; }
+.def-popover .def-formula { direction: ltr; text-align: left; background: var(--gray-light3);
+  padding: 6px 10px; border-radius: 8px; font-size: 12px; margin-top: 4px; word-break: break-word; }
+.def-popover .def-empty { color: var(--gray-medium2); }   
 
 /* ================================================================
    نودهای درخت
@@ -663,6 +678,8 @@ async function loadDefinitions() {
       if (!kpiName) continue;
       definitionsData.push({ kpiName, team, definition, formula });
     }
+    defMap = {};
+    definitionsData.forEach(d => { defMap[d.kpiName] = { definition: d.definition, formula: d.formula }; }); 
     console.log("تعاریف بارگذاری شد:", definitionsData.length);
   } catch(err) {
     console.error("خطا در بارگذاری تعاریف:", err);
@@ -846,6 +863,42 @@ function renderGlossary() {
   html += `</div></div>`;
   canvas.innerHTML = html;
 }
+
+let defMap = {};   // نام شاخص → {definition, formula}
+let defOpenFor = null;
+function ensureDefPopover() {
+  let p = document.getElementById('defPopover');
+  if (!p) {
+    p = document.createElement('div');
+    p.id = 'defPopover'; p.className = 'def-popover'; p.style.display = 'none';
+    document.body.appendChild(p);
+    document.addEventListener('click', (e) => {
+      const pop = document.getElementById('defPopover');
+      if (pop && pop.style.display !== 'none' && !pop.contains(e.target) && !e.target.classList.contains('def-icon')) {
+        pop.style.display = 'none'; defOpenFor = null;
+      }
+    });
+  }
+  return p;
+}
+function showDef(icon, name) {
+  const p = ensureDefPopover();
+  if (defOpenFor === icon) { p.style.display = 'none'; defOpenFor = null; return; }
+  const d = defMap[name] || {};
+  const def = d.definition ? d.definition : '<span class="def-empty">تعریفی ثبت نشده است.</span>';
+  const formula = d.formula ? `<span class="def-label">فرمول</span><div class="def-formula">${d.formula}</div>` : '';
+  p.innerHTML = `<h4>${name}</h4><span class="def-label">تعریف</span>${def}${formula}`;
+  p.style.display = 'block'; p.style.visibility = 'hidden';
+  const r = icon.getBoundingClientRect();
+  const pw = p.offsetWidth, ph = p.offsetHeight;
+  let left = r.left - pw + r.width;
+  let top = r.bottom + 8;
+  if (left < 8) left = 8;
+  if (left + pw > window.innerWidth - 8) left = window.innerWidth - pw - 8;
+  if (top + ph > window.innerHeight - 8) top = r.top - ph - 8;
+  p.style.left = left + 'px'; p.style.top = top + 'px'; p.style.visibility = 'visible';
+  defOpenFor = icon;
+}
    
 function toggleNode(btn) {
   const node = btn.closest('.tree-node');
@@ -882,6 +935,7 @@ function renderNode(name, depth, visited) {
     ${depth>0 ? `<span class="team-tag" style="${depth>1?`color:${color};background:${color}18;`:''}">${kpi.team}</span>` : ''}
     <span class="kpi-number">${fv}</span>
     ${diffHtmlNode}
+    <span class="def-icon" onclick="event.stopPropagation();showDef(this,'${escName(name)}')">ⓘ</span>
   </div>`;
 
   let html = `<div class="tree-node"><div class="node-row">${toggle}${box}</div>`;
