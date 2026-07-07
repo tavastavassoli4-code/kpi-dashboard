@@ -331,6 +331,28 @@ body {
 .trend-legend .lg-item { font-size: 11px; color: var(--gray-dark); display: flex; align-items: center; gap: 5px; }
 .trend-legend .lg-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
 .trend-note { font-size: 10.5px; color: var(--gray-medium2); margin-top: 6px; line-height: 1.7; }   
+/* ===== تب مدیریتی ===== */
+.exec-wrap { max-width: 1100px; margin: 0 auto; padding: 8px 4px 40px; }
+.exec-section-title { font-size: 15px; font-weight: 800; color: var(--gray-dark); margin: 22px 4px 12px; display: flex; align-items: center; gap: 8px; }
+.risk-count { background: #fdeaea; color: #c53030; font-size: 12px; font-weight: 700; border-radius: 20px; padding: 1px 9px; }
+.ns-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+.ns-card { background: #fff; border: 1px solid var(--gray-light2); border-radius: 16px; padding: 16px; cursor: pointer; transition: box-shadow .15s, transform .15s; }
+.ns-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,.08); transform: translateY(-2px); }
+.ns-name { font-size: 13px; color: var(--gray-medium1); font-weight: 700; margin-bottom: 8px; }
+.ns-value { font-size: 20px; font-weight: 800; color: var(--brand-pink); direction: rtl; }
+.ns-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; align-items: center; }
+.ns-target { font-size: 11px; padding: 2px 8px; border-radius: 20px; }
+.ns-ok { background: #e6f7ee; color: #12894c; }
+.ns-bad { background: #fdeaea; color: #c53030; }
+.exec-empty { background: #fff; border: 1px dashed var(--gray-light2); border-radius: 14px; padding: 18px; color: var(--gray-medium2); font-size: 13px; line-height: 1.9; }
+.risk-table { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid var(--gray-light2); border-radius: 14px; overflow: hidden; }
+.risk-table th { text-align: right; font-size: 12px; color: var(--gray-medium1); font-weight: 700; padding: 12px 14px; background: var(--gray-light3); border-bottom: 1px solid var(--gray-light2); }
+.risk-table td { font-size: 13px; color: var(--gray-dark); padding: 12px 14px; border-bottom: 1px solid var(--gray-light2); }
+.risk-table tr:last-child td { border-bottom: none; }
+.risk-table tbody tr { cursor: pointer; }
+.risk-table tbody tr:hover { background: var(--brand-pink-light4); }
+.risk-table .rk-name { font-weight: 700; }
+.risk-table .rk-gap { color: #c53030; font-weight: 700; white-space: nowrap; }   
 .trend-picker { position: fixed; z-index: 1050; background: #fff; border: 1px solid var(--gray-light2);
   border-radius: 12px; box-shadow: 0 8px 28px rgba(0,0,0,.15); padding: 8px; max-height: 320px; overflow-y: auto; min-width: 220px; max-width: 340px; }
 .trend-picker .tp-title { font-size: 11px; font-weight: 700; color: var(--gray-medium1); padding: 4px 8px 8px; }
@@ -458,6 +480,7 @@ body {
 </div>
    <!-- ===== نوار بالایی جدید با آیکون‌های دیده‌بان و شاخص‌نامه ===== -->
 <div class="top-nav">
+  <button id="btnExec" class="nav-btn">🌡️ مدیریتی</button>
   <button id="btnObserver" class="nav-btn active">🔍 دیده‌بان</button>
   <button id="btnGlossary" class="nav-btn">📜 شاخص‌نامه</button>
 </div>
@@ -800,9 +823,98 @@ function updateAllUI() {
     buildList();
     if (!selectedKPI) selectKPI(kpiMap["Net Profit"] ? "NMV" : raw[0].name);
     else renderTree(selectedKPI);
+  } else if (currentView === "exec") {
+    renderExecutive();
   } else {
     renderGlossary();
   }
+}
+
+function renderExecutive() {
+  const canvas = document.getElementById('canvas');
+  const wk = currentWeek;
+  const idx = availableWeeks.indexOf(wk);
+  const prevWk = idx > 0 ? availableWeeks[idx-1] : null;
+
+  const wowFor = (name, val) => {
+    if (!prevWk) return '';
+    const pv = getKPIValueAndUnit(name, prevWk).value;
+    const diff = getWeekDiff(val, pv, name);
+    return (diff && diff.text && diff.text !== "NaN%") ? `<span class="${diff.class}">${diff.text}</span>` : '';
+  };
+
+  // ---- تاپ‌لاین ----
+  const important = raw.filter(k => numberFormats[k.name] && numberFormats[k.name].important);
+  let nsCards;
+  if (important.length === 0) {
+    nsCards = `<div class="exec-empty">هنوز شاخصی به‌عنوان «مهم / تاپ‌لاین» علامت نخورده است. در تب Config، ستون «شاخص مهم (تاپ‌لاین)» را برای شاخص‌های کلیدی پر کن (هر مقداری مثل ✓ کافی است).</div>`;
+  } else {
+    nsCards = '<div class="ns-grid">' + important.map(k => {
+      const { value, unit } = getKPIValueAndUnit(k.name, wk);
+      const fv = formatNumber(value, k.name, unit);
+      const t = targets[k.name];
+      let tgtHtml = '';
+      if (t !== undefined && value !== null && value !== undefined && !isNaN(Number(value))) {
+        const dir = (numberFormats[k.name] && numberFormats[k.name].direction) || 'up';
+        const meeting = dir === 'down' ? Number(value) <= t : Number(value) >= t;
+        tgtHtml = `<span class="ns-target ${meeting?'ns-ok':'ns-bad'}">هدف ${formatNumber(t, k.name, unit)} ${meeting?'✓':'✗'}</span>`;
+      }
+      return `<div class="ns-card" onclick="execGoto('${escName(k.name)}')">
+        <div class="ns-name">${k.name}</div>
+        <div class="ns-value">${fv}</div>
+        <div class="ns-meta">${wowFor(k.name, value)}${tgtHtml}</div>
+      </div>`;
+    }).join('') + '</div>';
+  }
+
+  // ---- در ریسک ----
+  const RISK_LIMIT = 10;
+  const risks = [];
+  raw.forEach(k => {
+    const t = targets[k.name]; if (t === undefined) return;
+    const { value } = getKPIValueAndUnit(k.name, wk);
+    const v = Number(value);
+    if (value === null || value === undefined || isNaN(v)) return;
+    const dir = (numberFormats[k.name] && numberFormats[k.name].direction) || 'up';
+    const denom = Math.abs(t) || 1;
+    const miss = dir === 'down' ? (v - t)/denom : (t - v)/denom;
+    if (miss > 0) risks.push({ k, v, t, dir, miss });
+  });
+  risks.sort((a,b) => b.miss - a.miss);
+  const topRisks = risks.slice(0, RISK_LIMIT);
+
+  let riskHtml;
+  if (topRisks.length === 0) {
+    riskHtml = `<div class="exec-empty">این هفته هیچ شاخصِ هدف‌داری زیر هدف نیست. 🎉</div>`;
+  } else {
+    riskHtml = `<table class="risk-table"><thead><tr><th>شاخص</th><th>تیم</th><th>مقدار فعلی</th><th>هدف</th><th>فاصله تا هدف</th><th>هفتگی</th></tr></thead><tbody>`
+      + topRisks.map(r => {
+        const unit = getKPIValueAndUnit(r.k.name, wk).unit;
+        const pct = Math.round(r.miss * 100);
+        const gapTxt = r.dir === 'down' ? `${pct}٪ بالای هدف` : `${pct}٪ زیر هدف`;
+        return `<tr onclick="execGoto('${escName(r.k.name)}')">
+          <td class="rk-name">${r.k.name}</td><td>${r.k.team}</td>
+          <td>${formatNumber(r.v, r.k.name, unit)}</td><td>${formatNumber(r.t, r.k.name, unit)}</td>
+          <td class="rk-gap">${gapTxt}</td><td>${wowFor(r.k.name, r.v)}</td></tr>`;
+      }).join('') + `</tbody></table>`;
+  }
+
+  canvas.innerHTML = `<div class="exec-wrap">
+    <div class="exec-section-title">شاخص‌های کلیدی — هفته ${wk}</div>
+    ${nsCards}
+    <div class="exec-section-title">شاخص‌های در ریسک این هفته${topRisks.length?` <span class="risk-count">${topRisks.length}</span>`:''}</div>
+    ${riskHtml}
+  </div>`;
+}
+
+function execGoto(name) {
+  currentView = "observer";
+  document.getElementById('btnObserver').classList.add('active');
+  document.getElementById('btnExec').classList.remove('active');
+  document.getElementById('btnGlossary').classList.remove('active');
+  document.getElementById('teamsBar').style.display = "flex";
+  document.getElementById('listPanel').style.display = "";
+  selectKPI(name);
 }
 const TREND_PALETTE = ['#f4a300','#7c4dff','#0088cc','#e5484d','#2d9d4f','#8a6d3b','#c026d3','#da1984'];
 let trendOverlays = new Set();
@@ -1165,6 +1277,7 @@ document.getElementById('btnObserver').addEventListener('click', () => {
   document.getElementById('btnObserver').classList.add('active');
   document.getElementById('btnGlossary').classList.remove('active');
   document.getElementById('teamsBar').style.display = "flex";  // نمایش نوار تیم‌ها
+  document.getElementById('listPanel').style.display = "";
   updateAllUI();
 });
 
@@ -1173,7 +1286,18 @@ document.getElementById('btnGlossary').addEventListener('click', () => {
   document.getElementById('btnGlossary').classList.add('active');
   document.getElementById('btnObserver').classList.remove('active');
   document.getElementById('teamsBar').style.display = "none";  // مخفی کردن نوار تیم‌ها
+  document.getElementById('listPanel').style.display = "";
   renderGlossary();
+});
+
+document.getElementById('btnExec').addEventListener('click', () => {
+  currentView = "exec";
+  document.getElementById('btnExec').classList.add('active');
+  document.getElementById('btnObserver').classList.remove('active');
+  document.getElementById('btnGlossary').classList.remove('active');
+  document.getElementById('teamsBar').style.display = "none";
+  document.getElementById('listPanel').style.display = "none";
+  renderExecutive();
 });
 loadGoogleSheetData();
 </script>
